@@ -1,4 +1,4 @@
-name: Run prettier
+name: Run Prettier
 
 on: [pull_request]
 
