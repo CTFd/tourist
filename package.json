@@ -7,8 +7,9 @@
   "author": "Miłosz Skaza <milosz.skaza@ctfd.io>",
   "license": "Apache-2.0",
   "scripts": {
-    "build": "rm -rf ./build && tsc -p tsconfig.json",
-    "start": "yarn build && node build/index.js",
+    "build": "rm -rf ./out && tsc -p tsconfig.json",
+    "start:serve": "node index.js",
+    "start:build": "yarn build && node out/index.js",
     "start:app": "nodemon ./src/index.ts",
     "start:test-app": "nodemon ./tests/utils/_server.ts",
     "format": "prettier '{src,tests}/**/*.ts' --write",
