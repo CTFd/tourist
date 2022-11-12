@@ -111,7 +111,12 @@ test("POST '/visit' creates screenshot", async t => {
   });
 
   t.is(response.statusCode, 200);
-  t.snapshot(response.json().screenshot);
+
+  const body = response.json();
+  t.assert(body.hasOwnProperty("screenshot"));
+
+  const base64regex = /^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)?$/;
+  t.truthy(base64regex.exec(body.screenshot));
 });
 
 test("POST '/visit' does not accept multiple record, pdf, screenshot properties", async t => {
