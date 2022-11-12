@@ -1,17 +1,23 @@
 import { IncomingHttpHeaders } from "http";
-import Fastify, { FastifyListenOptions, FastifyServerOptions, FastifyRequest } from "fastify";
+import Fastify, {
+  FastifyListenOptions,
+  FastifyServerOptions,
+  FastifyRequest,
+} from "fastify";
 import formbody from "@fastify/formbody";
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 type RecordingRequest = FastifyRequest<{
-  Querystring: { id: string }
-}>
+  Querystring: { id: string };
+}>;
 
 type FormRecordingRequest = FastifyRequest<{
-  Body: { fillme: string, checkme: string, id: string }
-}>
+  Body: { fillme: string; checkme: string; id: string };
+}>;
 
-const forms: { [id: string]: { fillme: string, checkme: string, headers: IncomingHttpHeaders } } = {};
+const forms: {
+  [id: string]: { fillme: string; checkme: string; headers: IncomingHttpHeaders };
+} = {};
 const requests: { [id: string]: { headers: IncomingHttpHeaders } } = {};
 
 export const startTestApp = async (
@@ -50,19 +56,32 @@ export const startTestApp = async (
   app.get("/sleep", async (request, reply) => {
     // simulate long loading
     await sleep(5000);
-    reply.type("image/gif").send(Buffer.from("R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7", "base64"));
+    reply
+      .type("image/gif")
+      .send(
+        Buffer.from(
+          "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
+          "base64",
+        ),
+      );
   });
 
   // testing anchors
   app.get("/anchor", (request: RecordingRequest, reply) => {
     const { id } = request.query;
-    reply.type("text/html").send(`<a href="/record-req?id=${id}" id="click">Click Me!</a>`);
+    reply
+      .type("text/html")
+      .send(`<a href="/record-req?id=${id}" id="click">Click Me!</a>`);
   });
 
   // testing buttons
   app.get("/button", (request: RecordingRequest, reply) => {
     const { id } = request.query;
-    reply.type("text/html").send(`<button onclick="window.location='/record-req?id=${id}'" id="click">Click Me!</button>`);
+    reply
+      .type("text/html")
+      .send(
+        `<button onclick="window.location='/record-req?id=${id}'" id="click">Click Me!</button>`,
+      );
   });
 
   // testing forms
@@ -92,19 +111,29 @@ export const startTestApp = async (
   // testing alerts
   app.get("/alert", (request: RecordingRequest, reply) => {
     const { id } = request.query;
-    reply.type("text/html").send(`<script>alert(1); window.location='/record-req?id=${id}'</script>`);
+    reply
+      .type("text/html")
+      .send(`<script>alert(1); window.location='/record-req?id=${id}'</script>`);
   });
 
   // testing confirms
   app.get("/confirm", (request: RecordingRequest, reply) => {
     const { id } = request.query;
-    reply.type("text/html").send(`<script>confirm('confirm?') ? window.location='/record-req?id=${id}' : window.location='/'</script>`);
+    reply
+      .type("text/html")
+      .send(
+        `<script>confirm('confirm?') ? window.location='/record-req?id=${id}' : window.location='/'</script>`,
+      );
   });
 
   // testing prompts
   app.get("/prompt", (request: RecordingRequest, reply) => {
     const { id } = request.query;
-    reply.type("text/html").send(`<script>prompt('prompt?') === 'confirm' ? window.location='/record-req?id=${id}' : window.location='/'</script>`);
+    reply
+      .type("text/html")
+      .send(
+        `<script>prompt('prompt?') === 'confirm' ? window.location='/record-req?id=${id}' : window.location='/'</script>`,
+      );
   });
 
   try {

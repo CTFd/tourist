@@ -7,11 +7,18 @@ import { createApp } from "../src/app";
 // @ts-ignore: tests directory is not under rootDir, because we're using ts-node for testing
 import { startTestApp } from "./utils/_app";
 
-const test = anyTest as TestFn<{ app: FastifyInstance; testApp: FastifyInstance, testAppURL: string }>;
+const test = anyTest as TestFn<{
+  app: FastifyInstance;
+  testApp: FastifyInstance;
+  testAppURL: string;
+}>;
 
 test.before(async t => {
   const app = await createApp({ logger: false });
-  const testApp = await startTestApp({ logger: false }, { host: "localhost", port: 3333 });
+  const testApp = await startTestApp(
+    { logger: false },
+    { host: "localhost", port: 3333 },
+  );
 
   t.context = {
     // @ts-ignore: createApp returns a type extended with TypeBoxTypeProvider
@@ -222,9 +229,9 @@ test("POST '/visit' rejects invalid pre open actions", async t => {
 
   t.is(response.statusCode, 400);
   t.deepEqual(response.json(), {
-    "statusCode": 400,
-    "status": "failed",
-    "message": `invalid action "page.on('sheesh')"`,
+    statusCode: 400,
+    status: "failed",
+    message: `invalid action "page.on('sheesh')"`,
   });
 });
 
@@ -246,9 +253,9 @@ test("POST '/visit' rejects invalid post open actions", async t => {
 
   t.is(response.statusCode, 400);
   t.deepEqual(response.json(), {
-    "statusCode": 400,
-    "status": "failed",
-    "message": "invalid action \"sheesh\"",
+    statusCode: 400,
+    status: "failed",
+    message: 'invalid action "sheesh"',
   });
 });
 
@@ -296,7 +303,8 @@ test("POST '/visit' can use multiple steps", async t => {
       ],
       cookies: [
         { name: "test", value: "test", domain: "localhost" },
-        { name: "test2", value: "test2", domain: "localhost" }],
+        { name: "test2", value: "test2", domain: "localhost" },
+      ],
     },
   });
 
@@ -333,15 +341,16 @@ test("POST '/visit' saves set cookies", async t => {
     method: "POST",
     url: "/visit",
     payload: {
-      steps: [{
-        url: `${testAppURL}/set-cookie?id=${testID}`,
-        actions: [
-          "page.waitForSelector('h1')",
-        ],
-      }],
+      steps: [
+        {
+          url: `${testAppURL}/set-cookie?id=${testID}`,
+          actions: ["page.waitForSelector('h1')"],
+        },
+      ],
       cookies: [
         { name: "test", value: "test", domain: "localhost" },
-        { name: "test2", value: "test2", domain: "localhost" }],
+        { name: "test2", value: "test2", domain: "localhost" },
+      ],
     },
   });
 
@@ -387,10 +396,7 @@ test("POST '/visit' steps can interact with anchors", async t => {
       steps: [
         {
           url: `${testAppURL}/anchor?id=${testID}`,
-          actions: [
-            "page.click('#click')",
-            "page.waitForSelector('h1')",
-          ],
+          actions: ["page.click('#click')", "page.waitForSelector('h1')"],
         },
       ],
     },
@@ -420,10 +426,7 @@ test("POST '/visit' steps can interact with buttons", async t => {
       steps: [
         {
           url: `${testAppURL}/button?id=${testID}`,
-          actions: [
-            "page.click('#click')",
-            "page.waitForSelector('h1')",
-          ],
+          actions: ["page.click('#click')", "page.waitForSelector('h1')"],
         },
       ],
     },
@@ -490,9 +493,7 @@ test("POST '/visit' steps dismiss alerts implicitly", async t => {
       steps: [
         {
           url: `${testAppURL}/alert?id=${testID}`,
-          actions: [
-            "page.waitForSelector('h1')",
-          ],
+          actions: ["page.waitForSelector('h1')"],
         },
       ],
     },

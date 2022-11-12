@@ -3,4 +3,4 @@ import { startTestApp } from "./_app";
 
 (async () => {
   await startTestApp({ logger: true }, { host: "localhost", port: 5000 });
-})()
+})();
