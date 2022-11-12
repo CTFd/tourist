@@ -17,7 +17,6 @@ import {
   LegacyVisitReply,
 } from "../schemas/legacy";
 
-
 export default (
   fastify: FastifyInstance,
   options: FastifyPluginOptions,
@@ -45,7 +44,8 @@ const getVisitHandler = (fastify: FastifyInstance) => {
         statusCode: 400,
         status: "failed",
         error: "Bad Request",
-        message: "Exactly one option of [record, screenshot, pdf] can be used at a time",
+        message:
+          "Exactly one option of [record, screenshot, pdf] can be used at a time",
       });
     }
 
@@ -83,9 +83,9 @@ const getVisitHandler = (fastify: FastifyInstance) => {
         } catch (e) {
           fastify.log.error(e);
           return reply.status(400).send({
-            "statusCode": 400,
-            "status": "failed",
-            "message": `invalid action "${preOpenAction}"`,
+            statusCode: 400,
+            status: "failed",
+            message: `invalid action "${preOpenAction}"`,
           });
         }
       }
@@ -99,9 +99,9 @@ const getVisitHandler = (fastify: FastifyInstance) => {
         } catch (e) {
           fastify.log.error(e);
           return reply.status(400).send({
-            "statusCode": 400,
-            "status": "failed",
-            "message": `invalid action "${postOpenAction}"`,
+            statusCode: 400,
+            status: "failed",
+            message: `invalid action "${postOpenAction}"`,
           });
         }
       }

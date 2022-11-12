@@ -12,7 +12,7 @@
     "start:app": "nodemon ./src/index.ts",
     "start:test-app": "nodemon ./tests/utils/_server.ts",
     "format": "prettier 'src/**/*.ts' --write",
-    "lint": "prettier 'src/**/*.ts'",
+    "lint": "prettier --check 'src/**/*.ts'",
     "test": "ava",
     "test:watch": "ava --watch",
     "test:cov": "c8 ava"
