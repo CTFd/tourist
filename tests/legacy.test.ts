@@ -235,7 +235,7 @@ test("POST '/visit' rejects invalid pre open actions", async t => {
   t.is(response.statusCode, 400);
   t.deepEqual(response.json(), {
     statusCode: 400,
-    status: "failed",
+    error: "Bad Request",
     message: `invalid action "page.on('sheesh')"`,
   });
 });
@@ -259,7 +259,7 @@ test("POST '/visit' rejects invalid post open actions", async t => {
   t.is(response.statusCode, 400);
   t.deepEqual(response.json(), {
     statusCode: 400,
-    status: "failed",
+    error: "Bad Request",
     message: 'invalid action "sheesh"',
   });
 });

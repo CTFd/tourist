@@ -36,10 +36,17 @@ export const LegacyVisitRequest = Type.Object(
 );
 export type LegacyVisitRequestType = Static<typeof LegacyVisitRequest>;
 
-export const LegacyVisitReply = Type.Object({
-  status: Type.Union([Type.Literal("ok"), Type.Literal("failed")]),
+export const LegacyVisit400Reply = Type.Object({
+  statusCode: Type.Literal(400),
+  error: Type.String(),
+  message: Type.String(),
+});
+export type LegacyVisit400ReplyType = Static<typeof LegacyVisit400Reply>;
+
+export const LegacyVisit200Reply = Type.Object({
+  status: Type.Literal("ok"),
   screenshot: Type.Optional(Type.String()),
   video: Type.Optional(Type.String()),
   pdf: Type.Optional(Type.String()),
 });
-export type LegacyVisitReplyType = Static<typeof LegacyVisitReply>;
+export type LegacyVisit200ReplyType = Static<typeof LegacyVisit200Reply>;
