@@ -15,13 +15,13 @@ export const createApp = async (options: FastifyServerOptions = { logger: true }
 
   app.register(fastifySwagger, SwaggerConfig);
 
-  const StaticPath = path.resolve("static");
+  const StaticPath = path.normalize(path.join(__dirname, "..", "static"));
   if (!fs.existsSync(StaticPath)) {
     fs.mkdirSync(StaticPath);
   }
 
   app.register(fastifyStatic, {
-    root: path.resolve(path.join("static")),
+    root: StaticPath,
   });
 
   const router = createRouter();
