@@ -12,9 +12,11 @@ import playwright from "playwright";
 
 import {
   LegacyVisitRequestType,
-  LegacyVisitReplyType,
+  LegacyVisit200ReplyType,
   LegacyVisitRequest,
-  LegacyVisitReply,
+  LegacyVisit200Reply,
+  LegacyVisit400Reply,
+  LegacyVisit400ReplyType,
 } from "../schemas/legacy";
 
 export default (
@@ -22,13 +24,16 @@ export default (
   options: FastifyPluginOptions,
   done: (err?: Error | undefined) => void,
 ) => {
-  fastify.post<{ Body: LegacyVisitRequestType; Reply: LegacyVisitReplyType }>(
-    "/visit",
-    {
-      schema: { body: LegacyVisitRequest, response: { 200: LegacyVisitReply } },
-      handler: getVisitHandler(fastify),
+  fastify.post<{
+    Body: LegacyVisitRequestType;
+    Reply: LegacyVisit200ReplyType | LegacyVisit400ReplyType;
+  }>("/visit", {
+    schema: {
+      body: LegacyVisitRequest,
+      response: { 200: LegacyVisit200Reply, 400: LegacyVisit400Reply },
     },
-  );
+    handler: getVisitHandler(fastify),
+  });
 
   done();
 };
@@ -42,7 +47,6 @@ const getVisitHandler = (fastify: FastifyInstance) => {
     if ([record, screenshot, pdf].filter(Boolean).length > 1) {
       reply.status(400).send({
         statusCode: 400,
-        status: "failed",
         error: "Bad Request",
         message:
           "Exactly one option of [record, screenshot, pdf] can be used at a time",
@@ -84,7 +88,7 @@ const getVisitHandler = (fastify: FastifyInstance) => {
           fastify.log.error(e);
           return reply.status(400).send({
             statusCode: 400,
-            status: "failed",
+            error: "Bad Request",
             message: `invalid action "${preOpenAction}"`,
           });
         }
@@ -100,7 +104,7 @@ const getVisitHandler = (fastify: FastifyInstance) => {
           fastify.log.error(e);
           return reply.status(400).send({
             statusCode: 400,
-            status: "failed",
+            error: "Bad Request",
             message: `invalid action "${postOpenAction}"`,
           });
         }
