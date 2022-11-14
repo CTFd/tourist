@@ -10,14 +10,37 @@ import fastifyStatic from "@fastify/static";
 import { createRouter } from "./router";
 import { SwaggerConfig } from "./swagger";
 
-export const createApp = async (options: FastifyServerOptions = { logger: true }) => {
+declare type AdditionalOptions = {
+  staticPath?: string;
+};
+
+export const createApp = async (
+  options: FastifyServerOptions = { logger: true },
+  additionalOptions: AdditionalOptions = {},
+) => {
   const app = Fastify(options).withTypeProvider<TypeBoxTypeProvider>();
 
   app.register(fastifySwagger, SwaggerConfig);
 
-  const StaticPath = path.normalize(path.join(__dirname, "..", "static"));
-  if (!fs.existsSync(StaticPath)) {
-    fs.mkdirSync(StaticPath);
+  let StaticPath: string;
+  if (additionalOptions.staticPath) {
+    const staticPath = path.resolve(additionalOptions.staticPath);
+
+    if (!fs.existsSync(staticPath)) {
+      app.log.error(`Custom static directory '${staticPath}' does not exist!`);
+      process.exit(2);
+    }
+
+    StaticPath = staticPath;
+  } else {
+    const staticPath = path.normalize(path.join(__dirname, "..", "static"));
+
+    // only create the static directory if it's the default ./static
+    if (!fs.existsSync(staticPath)) {
+      fs.mkdirSync(staticPath);
+    }
+
+    StaticPath = staticPath;
   }
 
   app.register(fastifyStatic, {
