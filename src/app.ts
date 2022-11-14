@@ -16,8 +16,8 @@ export const createApp = async (options: FastifyServerOptions = { logger: true }
   app.register(fastifySwagger, SwaggerConfig);
 
   const StaticPath = path.resolve("static");
-  if (!fs.existsSync(StaticPath)){
-    fs.mkdirSync(StaticPath)
+  if (!fs.existsSync(StaticPath)) {
+    fs.mkdirSync(StaticPath);
   }
 
   app.register(fastifyStatic, {

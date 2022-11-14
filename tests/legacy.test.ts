@@ -62,7 +62,7 @@ test("POST '/visit' validates steps", async t => {
     url: "/visit",
     payload: {},
   });
-  
+
   t.is(response.statusCode, 400);
 });
 
