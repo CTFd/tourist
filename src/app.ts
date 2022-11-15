@@ -6,6 +6,7 @@ import { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
 
 import fastifySwagger from "@fastify/swagger";
 import fastifyStatic from "@fastify/static";
+import fastifySwaggerUI from "@fastify/swagger-ui";
 
 import { createRouter } from "./router";
 import { SwaggerConfig } from "./swagger";
@@ -45,6 +46,10 @@ export const createApp = async (
 
   app.register(fastifyStatic, {
     root: StaticPath,
+  });
+
+  app.register(fastifySwaggerUI, {
+    routePrefix: "/docs",
   });
 
   const router = createRouter();
