@@ -9,6 +9,10 @@ export const createRouter =
     options: FastifyPluginOptions,
     done: (err?: Error | undefined) => void,
   ) => {
+    fastify.get("/", (request, reply) => {
+      reply.redirect("/docs");
+    });
+
     fastify.register(legacy);
     fastify.register(healthcheck, { prefix: "/api" });
 

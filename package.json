@@ -21,6 +21,7 @@
   "dependencies": {
     "@fastify/static": "^6.5.0",
     "@fastify/swagger": "^8.1.0",
+    "@fastify/swagger-ui": "^1.2.0",
     "@fastify/type-provider-typebox": "^2.3.0",
     "@sinclair/typebox": "^0.25.5",
     "fastify": "^4.9.2",

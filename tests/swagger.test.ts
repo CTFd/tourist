@@ -31,3 +31,28 @@ test("GET '/openapi.json' returns the specification", async t => {
   t.is(response.statusCode, 200);
   t.snapshot(response.json());
 });
+
+test("GET '/' redirects to docs", async t => {
+  const app = await createApp({ logger: false });
+
+  const response = await app.inject({
+    method: "GET",
+    url: "/",
+  });
+
+  t.is(response.statusCode, 302);
+  t.assert(response.headers.hasOwnProperty("location"));
+  t.is(response.headers.location, "/docs");
+});
+
+test("GET '/docs' displays Swagger UI", async t => {
+  const app = await createApp({ logger: false });
+
+  const response = await app.inject({
+    method: "GET",
+    url: "/docs/static/index.html",
+  });
+
+  t.is(response.statusCode, 200);
+  t.assert(response.body.includes("Swagger UI"));
+});
