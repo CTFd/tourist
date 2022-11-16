@@ -679,3 +679,88 @@ test("POST '/visit' steps can dismiss prompts", async t => {
   // request shouldn't be recorded if the confirm is dismissed
   t.falsy(inspection.body);
 });
+
+test("POST '/visit' steps run actions in an isolated context", async t => {
+  const { app, testAppURL } = t.context;
+
+  const response_1 = await app.inject({
+    method: "POST",
+    url: "/visit",
+    payload: {
+      steps: [
+        {
+          url: `${testAppURL}/`,
+          actions: ["process.exit()"],
+        },
+      ],
+    },
+  });
+
+  t.is(response_1.statusCode, 400);
+  t.deepEqual(response_1.json(), {
+    statusCode: 400,
+    error: "Bad Request",
+    message: 'invalid action "process.exit()"',
+  });
+
+  const response_2 = await app.inject({
+    method: "POST",
+    url: "/visit",
+    payload: {
+      steps: [
+        {
+          url: `${testAppURL}/`,
+          actions: ["require('child_process').execSync('id')"],
+        },
+      ],
+    },
+  });
+  t.is(response_2.statusCode, 400);
+  t.deepEqual(response_2.json(), {
+    statusCode: 400,
+    error: "Bad Request",
+    message: "invalid action \"require('child_process').execSync('id')\"",
+  });
+
+  const response_3 = await app.inject({
+    method: "POST",
+    url: "/visit",
+    payload: {
+      steps: [
+        {
+          url: `${testAppURL}/`,
+          actions: [
+            "process.mainModule.require('child_process').execSync('id').toString()",
+          ],
+        },
+      ],
+    },
+  });
+  t.is(response_3.statusCode, 400);
+  t.deepEqual(response_3.json(), {
+    statusCode: 400,
+    error: "Bad Request",
+    message:
+      "invalid action \"process.mainModule.require('child_process').execSync('id').toString()\"",
+  });
+
+  const response_4 = await app.inject({
+    method: "POST",
+    url: "/visit",
+    payload: {
+      steps: [
+        {
+          url: `${testAppURL}/`,
+          actions: ["this.constructor.constructor('return process')().exit()"],
+        },
+      ],
+    },
+  });
+  t.is(response_4.statusCode, 400);
+  t.deepEqual(response_4.json(), {
+    statusCode: 400,
+    error: "Bad Request",
+    message:
+      "invalid action \"this.constructor.constructor('return process')().exit()\"",
+  });
+});
