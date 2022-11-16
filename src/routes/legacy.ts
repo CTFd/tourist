@@ -9,6 +9,7 @@ import {
 } from "fastify";
 
 import playwright from "playwright";
+import { VM } from "vm2";
 
 import {
   LegacyVisitRequestType,
@@ -81,9 +82,17 @@ const getVisitHandler = (fastify: FastifyInstance) => {
         actions.postOpen = step.actions.filter(action => !action.startsWith("page.on"));
       }
 
+      const vm = new VM({
+        eval: false,
+        wasm: false,
+        sandbox: {
+          page,
+        },
+      });
+
       for (const preOpenAction of actions.preOpen) {
         try {
-          await (async () => eval(preOpenAction))();
+          await (async () => vm.run(preOpenAction))();
         } catch (e) {
           fastify.log.error(e);
           return reply.status(400).send({
@@ -98,7 +107,7 @@ const getVisitHandler = (fastify: FastifyInstance) => {
 
       for (const postOpenAction of actions.postOpen) {
         try {
-          await (async () => eval(postOpenAction))();
+          await (async () => vm.run(postOpenAction))();
           await page.waitForLoadState();
         } catch (e) {
           fastify.log.error(e);
