@@ -3,6 +3,7 @@ name: Build Docker
 on:
   workflow_run:
     workflows: ["Run Tests"]
+    branches: [main]
     types:
       - completed
 
@@ -23,23 +24,11 @@ jobs:
           registry: ghcr.io
           username: milymilo
           password: ${{ secrets.CR_PAT }}
-      - name: Extract branch name
-        run: |
-          export GH_BRANCH=${GITHUB_REF#refs/heads/}
-          echo "branch=$GH_BRANCH" >> $GITHUB_OUTPUT
-        id: extract_branch
       - name: Extract version
         run: |
           export VERSION=`node -e "console.log(require('./package').version)"`
           echo "version=$VERSION" >> $GITHUB_OUTPUT
         id: extract_version
-      - name: Build and push feature branch
-        if: github.ref != 'refs/heads/main'
-        uses: docker/build-push-action@v3
-        with:
-          push: true
-          tags: |
-            ghcr.io/milymilo/tourist:${{ steps.extract_branch.outputs.branch }}
       - name: Build and push latest
         if: github.ref == 'refs/heads/main'
         uses: docker/build-push-action@v3
