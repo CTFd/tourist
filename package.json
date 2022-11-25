@@ -25,11 +25,13 @@
     "@fastify/type-provider-typebox": "^2.3.0",
     "@sinclair/typebox": "^0.25.8",
     "fastify": "^4.10.0",
+    "lodash": "^4.17.21",
     "playwright": "^1.27.1",
     "vm2": "^3.9.11"
   },
   "devDependencies": {
     "@fastify/formbody": "^7.3.0",
+    "@types/lodash": "^4.14.190",
     "@types/node": "^18.11.9",
     "@types/uuid": "^8.3.4",
     "ava": "^5.1.0",

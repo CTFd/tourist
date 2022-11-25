@@ -9,16 +9,19 @@ import {
 } from "fastify";
 
 import playwright from "playwright";
+import _ from "lodash";
 import { VM } from "vm2";
 
 import {
   LegacyVisitRequestType,
   LegacyVisit200ReplyType,
+  LegacyVisit400ReplyType,
   LegacyVisitRequest,
   LegacyVisit200Reply,
   LegacyVisit400Reply,
-  LegacyVisit400ReplyType,
 } from "../schemas/legacy";
+
+import { validateLegacyActions, camelizeLegacyActions } from "../utils/legacy";
 
 export default (
   fastify: FastifyInstance,
@@ -54,6 +57,28 @@ const getVisitHandler = (fastify: FastifyInstance) => {
       });
     }
 
+    for (const step of steps) {
+      if (step.actions) {
+        try {
+          validateLegacyActions(step.actions);
+        } catch (e: any) {
+          fastify.log.error(e.message);
+
+          return reply.status(400).send({
+            statusCode: 400,
+            error: "Bad Request",
+            message: e.message,
+          });
+        }
+      }
+    }
+
+    for (const step of steps) {
+      if (step.actions) {
+        step.actions = camelizeLegacyActions(step.actions);
+      }
+    }
+
     const browser = await playwright.chromium.launch();
 
     let context;
@@ -78,8 +103,9 @@ const getVisitHandler = (fastify: FastifyInstance) => {
       // split step actions into preOpen and postOpen
       // listeners such as page.on need to be registered before page.goto()
       if (step.actions) {
-        actions.preOpen = step.actions.filter(action => action.startsWith("page.on"));
-        actions.postOpen = step.actions.filter(action => !action.startsWith("page.on"));
+        [actions.preOpen, actions.postOpen] = _.partition(step.actions, action =>
+          action.startsWith("page.on"),
+        );
       }
 
       const vm = new VM({

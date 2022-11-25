@@ -219,48 +219,92 @@ test("POST '/visit' rejects cookies with invalid secure property", async t => {
 test("POST '/visit' rejects invalid pre open actions", async t => {
   const { app, testAppURL } = t.context;
 
-  const response = await app.inject({
+  const response_1 = await app.inject({
     method: "POST",
     url: "/visit",
     payload: {
       steps: [
         {
           url: `${testAppURL}/`,
+          // missing event handler
           actions: ["page.on('sheesh')"],
         },
       ],
     },
   });
 
-  t.is(response.statusCode, 400);
-  t.deepEqual(response.json(), {
+  t.is(response_1.statusCode, 400);
+  t.deepEqual(response_1.json(), {
     statusCode: 400,
     error: "Bad Request",
     message: `invalid action "page.on('sheesh')"`,
   });
-});
 
-test("POST '/visit' rejects invalid post open actions", async t => {
-  const { app, testAppURL } = t.context;
-
-  const response = await app.inject({
+  const response_2 = await app.inject({
     method: "POST",
     url: "/visit",
     payload: {
       steps: [
         {
           url: `${testAppURL}/`,
+          // missing final )
+          actions: ["page.on('dialog'"],
+        },
+      ],
+    },
+  });
+
+  t.is(response_2.statusCode, 400);
+  t.deepEqual(response_2.json(), {
+    statusCode: 400,
+    error: "Bad Request",
+    message: `invalid action "page.on('dialog'" - does not end with ")" or ");"`,
+  });
+});
+
+test("POST '/visit' rejects invalid post open actions", async t => {
+  const { app, testAppURL } = t.context;
+
+  const response_1 = await app.inject({
+    method: "POST",
+    url: "/visit",
+    payload: {
+      steps: [
+        {
+          url: `${testAppURL}/`,
+          // does not start with page
           actions: ["sheesh"],
         },
       ],
     },
   });
 
-  t.is(response.statusCode, 400);
-  t.deepEqual(response.json(), {
+  t.is(response_1.statusCode, 400);
+  t.deepEqual(response_1.json(), {
     statusCode: 400,
     error: "Bad Request",
-    message: 'invalid action "sheesh"',
+    message: 'invalid action "sheesh" - does not start with "page."',
+  });
+
+  const response_2 = await app.inject({
+    method: "POST",
+    url: "/visit",
+    payload: {
+      steps: [
+        {
+          url: `${testAppURL}/`,
+          // missing final )
+          actions: ["page.goto('https://example.com'"],
+        },
+      ],
+    },
+  });
+
+  t.is(response_2.statusCode, 400);
+  t.deepEqual(response_2.json(), {
+    statusCode: 400,
+    error: "Bad Request",
+    message: `invalid action "page.goto('https://example.com'" - does not end with ")" or ");"`,
   });
 });
 
@@ -690,7 +734,7 @@ test("POST '/visit' steps run actions in an isolated context", async t => {
       steps: [
         {
           url: `${testAppURL}/`,
-          actions: ["process.exit()"],
+          actions: ["page.; process.exit()"],
         },
       ],
     },
@@ -700,7 +744,7 @@ test("POST '/visit' steps run actions in an isolated context", async t => {
   t.deepEqual(response_1.json(), {
     statusCode: 400,
     error: "Bad Request",
-    message: 'invalid action "process.exit()"',
+    message: 'invalid action "page.; process.exit()"',
   });
 
   const response_2 = await app.inject({
@@ -710,7 +754,7 @@ test("POST '/visit' steps run actions in an isolated context", async t => {
       steps: [
         {
           url: `${testAppURL}/`,
-          actions: ["require('child_process').execSync('id')"],
+          actions: ["page.; require('child_process').execSync('id')"],
         },
       ],
     },
@@ -719,7 +763,7 @@ test("POST '/visit' steps run actions in an isolated context", async t => {
   t.deepEqual(response_2.json(), {
     statusCode: 400,
     error: "Bad Request",
-    message: "invalid action \"require('child_process').execSync('id')\"",
+    message: "invalid action \"page.; require('child_process').execSync('id')\"",
   });
 
   const response_3 = await app.inject({
@@ -730,7 +774,7 @@ test("POST '/visit' steps run actions in an isolated context", async t => {
         {
           url: `${testAppURL}/`,
           actions: [
-            "process.mainModule.require('child_process').execSync('id').toString()",
+            "page.; process.mainModule.require('child_process').execSync('id').toString()",
           ],
         },
       ],
@@ -741,7 +785,7 @@ test("POST '/visit' steps run actions in an isolated context", async t => {
     statusCode: 400,
     error: "Bad Request",
     message:
-      "invalid action \"process.mainModule.require('child_process').execSync('id').toString()\"",
+      "invalid action \"page.; process.mainModule.require('child_process').execSync('id').toString()\"",
   });
 
   const response_4 = await app.inject({
@@ -751,7 +795,7 @@ test("POST '/visit' steps run actions in an isolated context", async t => {
       steps: [
         {
           url: `${testAppURL}/`,
-          actions: ["this.constructor.constructor('return process')().exit()"],
+          actions: ["page.; this.constructor.constructor('return process')().exit()"],
         },
       ],
     },
@@ -761,6 +805,36 @@ test("POST '/visit' steps run actions in an isolated context", async t => {
     statusCode: 400,
     error: "Bad Request",
     message:
-      "invalid action \"this.constructor.constructor('return process')().exit()\"",
+      "invalid action \"page.; this.constructor.constructor('return process')().exit()\"",
   });
+});
+
+test("POST '/visit' accepts snake cased method names", async t => {
+  const { app, testApp, testAppURL } = t.context;
+  const testID = uuid4();
+
+  await app.inject({
+    method: "POST",
+    url: "/visit",
+    payload: {
+      steps: [
+        {
+          url: `${testAppURL}/anchor?id=${testID}`,
+          actions: ["page.click('#click')", "page.wait_for_selector('h1')"],
+        },
+      ],
+    },
+  });
+
+  const inspection = await testApp.inject({
+    method: "GET",
+    url: "/inspect-req",
+    query: {
+      id: testID,
+    },
+  });
+
+  const { headers } = inspection.json();
+  t.assert(headers.hasOwnProperty("referer"));
+  t.is(headers.referer, `${testAppURL}/anchor?id=${testID}`);
 });
