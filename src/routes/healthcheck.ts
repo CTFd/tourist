@@ -10,13 +10,11 @@ export default (
   options: FastifyPluginOptions,
   done: (err?: Error | undefined) => void,
 ) => {
-  fastify.get("/healthcheck", { handler: getHealthcheckHandler(fastify) });
+  fastify.get("/healthcheck", { handler: handleHealthcheck });
 
   done();
 };
 
-const getHealthcheckHandler = (fastify: FastifyInstance) => {
-  return (request: FastifyRequest, reply: FastifyReply) => {
-    reply.send({ status: "OK" });
-  };
+const handleHealthcheck = (request: FastifyRequest, reply: FastifyReply) => {
+  reply.send({ status: "OK" });
 };
