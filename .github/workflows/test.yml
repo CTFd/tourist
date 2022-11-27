@@ -10,6 +10,15 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    services:
+      redis:
+        image: redis
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     strategy:
       matrix:
         node-version: [16.x, 18.x]
@@ -24,3 +33,6 @@ jobs:
         run: yarn --frozen-lockfile
       - name: Test
         run: yarn test
+        env:
+          REDIS_URL: redis://redis:6379
+
