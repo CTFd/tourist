@@ -1,0 +1,12 @@
+version: '3'
+
+services:
+  tourist:
+    build: .
+    ports:
+      - '3000:3000'
+    environment:
+      REDIS_URL: redis://redis:6379
+
+  redis:
+    image: redis:alpine

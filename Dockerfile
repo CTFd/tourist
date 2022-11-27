@@ -9,7 +9,7 @@ USER tourist
 
 WORKDIR /app
 COPY package.json .
-COPY --from=builder /build/out .
+COPY --from=builder /build/out ./src
 
 ENV NODE_ENV=production \
     HOST=0.0.0.0 \
