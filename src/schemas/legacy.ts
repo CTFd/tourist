@@ -5,6 +5,8 @@ export const LegacyStep = Type.Object({
   actions: Type.Optional(Type.Array(Type.String())),
 });
 
+export type LegacyStepType = Static<typeof LegacyStep>;
+
 export const LegacyCookie = Type.Object(
   {
     name: Type.String(),
@@ -23,6 +25,8 @@ export const LegacyCookie = Type.Object(
   },
   { additionalProperties: false },
 );
+
+export type LegacyCookieType = Static<typeof LegacyCookie>;
 
 export const LegacyVisitRequest = Type.Object(
   {
@@ -44,7 +48,7 @@ export const LegacyVisit400Reply = Type.Object({
 export type LegacyVisit400ReplyType = Static<typeof LegacyVisit400Reply>;
 
 export const LegacyVisit200Reply = Type.Object({
-  status: Type.Literal("ok"),
+  status: Type.Union([Type.Literal("ok"), Type.Literal("scheduled")]),
   screenshot: Type.Optional(Type.String()),
   video: Type.Optional(Type.String()),
   pdf: Type.Optional(Type.String()),

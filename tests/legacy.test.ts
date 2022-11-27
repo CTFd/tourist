@@ -3,6 +3,7 @@ import anyTest, { TestFn } from "ava";
 import { v4 as uuid4 } from "uuid";
 
 import { createApp } from "../src/app";
+import { SimpleVisitQueue } from "../src/queue";
 
 // @ts-ignore: tests directory is not under rootDir, because we're using ts-node for testing
 import { startTestApp } from "./utils/_app";
@@ -12,6 +13,21 @@ const test = anyTest as TestFn<{
   testApp: FastifyInstance;
   testAppURL: string;
 }>;
+
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+const whenJobsFinished = async () => {
+  // check if the queue has been emptied every 100ms
+  // bull has no method for that, so it has to be done like this
+  while (true) {
+    await sleep(100);
+    const { waiting, active } = await SimpleVisitQueue.getJobCounts();
+
+    if (waiting + active == 0) {
+      break;
+    }
+  }
+};
 
 test.before(async t => {
   const app = await createApp({ logger: false });
@@ -51,7 +67,7 @@ test("POST '/visit' accepts valid request", async t => {
   });
 
   t.is(response.statusCode, 200);
-  t.deepEqual(response.json(), { status: "ok" });
+  t.deepEqual(response.json(), { status: "scheduled" });
 });
 
 test("POST '/visit' validates steps", async t => {
@@ -152,7 +168,7 @@ test("POST '/visit' accepts valid cookies", async t => {
   });
 
   t.is(response.statusCode, 200);
-  t.deepEqual(response.json(), { status: "ok" });
+  t.deepEqual(response.json(), { status: "scheduled" });
 });
 
 test("POST '/visit' rejects cookies without required properties", async t => {
@@ -219,28 +235,7 @@ test("POST '/visit' rejects cookies with invalid secure property", async t => {
 test("POST '/visit' rejects invalid pre open actions", async t => {
   const { app, testAppURL } = t.context;
 
-  const response_1 = await app.inject({
-    method: "POST",
-    url: "/visit",
-    payload: {
-      steps: [
-        {
-          url: `${testAppURL}/`,
-          // missing event handler
-          actions: ["page.on('sheesh')"],
-        },
-      ],
-    },
-  });
-
-  t.is(response_1.statusCode, 400);
-  t.deepEqual(response_1.json(), {
-    statusCode: 400,
-    error: "Bad Request",
-    message: `invalid action "page.on('sheesh')"`,
-  });
-
-  const response_2 = await app.inject({
+  const response = await app.inject({
     method: "POST",
     url: "/visit",
     payload: {
@@ -254,8 +249,8 @@ test("POST '/visit' rejects invalid pre open actions", async t => {
     },
   });
 
-  t.is(response_2.statusCode, 400);
-  t.deepEqual(response_2.json(), {
+  t.is(response.statusCode, 400);
+  t.deepEqual(response.json(), {
     statusCode: 400,
     error: "Bad Request",
     message: `invalid action "page.on('dialog'" - does not end with ")" or ");"`,
@@ -308,7 +303,7 @@ test("POST '/visit' rejects invalid post open actions", async t => {
   });
 });
 
-test("POST '/visit' attaches cookies to the browser", async t => {
+test.serial("POST '/visit' attaches cookies to the browser", async t => {
   const { app, testApp, testAppURL } = t.context;
   const testID = uuid4();
 
@@ -324,6 +319,8 @@ test("POST '/visit' attaches cookies to the browser", async t => {
     },
   });
 
+  await whenJobsFinished();
+
   const inspection = await testApp.inject({
     method: "GET",
     url: "/inspect-req",
@@ -337,7 +334,7 @@ test("POST '/visit' attaches cookies to the browser", async t => {
   t.is(headers.cookie, "test=test; test2=test2");
 });
 
-test("POST '/visit' can use multiple steps", async t => {
+test.serial("POST '/visit' can use multiple steps", async t => {
   const { app, testApp, testAppURL } = t.context;
   const testID_1 = uuid4();
   const testID_2 = uuid4();
@@ -356,6 +353,8 @@ test("POST '/visit' can use multiple steps", async t => {
       ],
     },
   });
+
+  await whenJobsFinished();
 
   const inspection_1 = await testApp.inject({
     method: "GET",
@@ -382,7 +381,7 @@ test("POST '/visit' can use multiple steps", async t => {
   t.is(headers_2.cookie, "test=test; test2=test2");
 });
 
-test("POST '/visit' saves set cookies", async t => {
+test.serial("POST '/visit' saves set cookies", async t => {
   const { app, testApp, testAppURL } = t.context;
   const testID = uuid4();
 
@@ -403,6 +402,8 @@ test("POST '/visit' saves set cookies", async t => {
     },
   });
 
+  await whenJobsFinished();
+
   const inspection = await testApp.inject({
     method: "GET",
     url: "/inspect-req",
@@ -416,7 +417,7 @@ test("POST '/visit' saves set cookies", async t => {
   t.is(headers.cookie, `test=test; test2=test2; test_cookie=cookie-${testID}`);
 });
 
-test("POST '/visit' waits for loaded state", async t => {
+test.serial("POST '/visit' waits for loaded state", async t => {
   const { app, testAppURL } = t.context;
 
   const start = performance.now();
@@ -427,6 +428,9 @@ test("POST '/visit' waits for loaded state", async t => {
       steps: [{ url: `${testAppURL}/loading` }],
     },
   });
+
+  await whenJobsFinished();
+
   const end = performance.now();
   const execution = end - start;
 
@@ -434,7 +438,7 @@ test("POST '/visit' waits for loaded state", async t => {
   t.assert(execution > 5500);
 });
 
-test("POST '/visit' steps can interact with anchors", async t => {
+test.serial("POST '/visit' steps can interact with anchors", async t => {
   const { app, testApp, testAppURL } = t.context;
   const testID = uuid4();
 
@@ -451,6 +455,8 @@ test("POST '/visit' steps can interact with anchors", async t => {
     },
   });
 
+  await whenJobsFinished();
+
   const inspection = await testApp.inject({
     method: "GET",
     url: "/inspect-req",
@@ -464,7 +470,7 @@ test("POST '/visit' steps can interact with anchors", async t => {
   t.is(headers.referer, `${testAppURL}/anchor?id=${testID}`);
 });
 
-test("POST '/visit' steps can interact with buttons", async t => {
+test.serial("POST '/visit' steps can interact with buttons", async t => {
   const { app, testApp, testAppURL } = t.context;
   const testID = uuid4();
 
@@ -481,6 +487,8 @@ test("POST '/visit' steps can interact with buttons", async t => {
     },
   });
 
+  await whenJobsFinished();
+
   const inspection = await testApp.inject({
     method: "GET",
     url: "/inspect-req",
@@ -494,7 +502,7 @@ test("POST '/visit' steps can interact with buttons", async t => {
   t.is(headers.referer, `${testAppURL}/button?id=${testID}`);
 });
 
-test("POST '/visit' steps can interact with forms", async t => {
+test.serial("POST '/visit' steps can interact with forms", async t => {
   const { app, testApp, testAppURL } = t.context;
   const testID = uuid4();
 
@@ -516,6 +524,8 @@ test("POST '/visit' steps can interact with forms", async t => {
     },
   });
 
+  await whenJobsFinished();
+
   const inspection = await testApp.inject({
     method: "GET",
     url: "/inspect-form",
@@ -531,7 +541,7 @@ test("POST '/visit' steps can interact with forms", async t => {
   t.is(headers.referer, `${testAppURL}/form?id=${testID}`);
 });
 
-test("POST '/visit' steps dismiss alerts implicitly", async t => {
+test.serial("POST '/visit' steps dismiss alerts implicitly", async t => {
   const { app, testApp, testAppURL } = t.context;
   const testID = uuid4();
 
@@ -548,6 +558,8 @@ test("POST '/visit' steps dismiss alerts implicitly", async t => {
     },
   });
 
+  await whenJobsFinished();
+
   const inspection = await testApp.inject({
     method: "GET",
     url: "/inspect-req",
@@ -561,7 +573,7 @@ test("POST '/visit' steps dismiss alerts implicitly", async t => {
   t.is(headers.referer, `${testAppURL}/alert?id=${testID}`);
 });
 
-test("POST '/visit' steps can accept alerts", async t => {
+test.serial("POST '/visit' steps can accept alerts", async t => {
   const { app, testApp, testAppURL } = t.context;
   const testID = uuid4();
 
@@ -581,6 +593,8 @@ test("POST '/visit' steps can accept alerts", async t => {
     },
   });
 
+  await whenJobsFinished();
+
   const inspection = await testApp.inject({
     method: "GET",
     url: "/inspect-req",
@@ -594,7 +608,7 @@ test("POST '/visit' steps can accept alerts", async t => {
   t.is(headers.referer, `${testAppURL}/alert?id=${testID}`);
 });
 
-test("POST '/visit' steps can accept confirms", async t => {
+test.serial("POST '/visit' steps can accept confirms", async t => {
   const { app, testApp, testAppURL } = t.context;
   const testID = uuid4();
 
@@ -614,6 +628,8 @@ test("POST '/visit' steps can accept confirms", async t => {
     },
   });
 
+  await whenJobsFinished();
+
   const inspection = await testApp.inject({
     method: "GET",
     url: "/inspect-req",
@@ -627,7 +643,7 @@ test("POST '/visit' steps can accept confirms", async t => {
   t.is(headers.referer, `${testAppURL}/confirm?id=${testID}`);
 });
 
-test("POST '/visit' steps can dismiss confirms", async t => {
+test.serial("POST '/visit' steps can dismiss confirms", async t => {
   const { app, testApp, testAppURL } = t.context;
   const testID = uuid4();
 
@@ -647,6 +663,8 @@ test("POST '/visit' steps can dismiss confirms", async t => {
     },
   });
 
+  await whenJobsFinished();
+
   const inspection = await testApp.inject({
     method: "GET",
     url: "/inspect-req",
@@ -659,7 +677,7 @@ test("POST '/visit' steps can dismiss confirms", async t => {
   t.falsy(inspection.body);
 });
 
-test("POST '/visit' steps can answer prompts", async t => {
+test.serial("POST '/visit' steps can answer prompts", async t => {
   const { app, testApp, testAppURL } = t.context;
   const testID = uuid4();
 
@@ -679,6 +697,8 @@ test("POST '/visit' steps can answer prompts", async t => {
     },
   });
 
+  await whenJobsFinished();
+
   const inspection = await testApp.inject({
     method: "GET",
     url: "/inspect-req",
@@ -692,7 +712,7 @@ test("POST '/visit' steps can answer prompts", async t => {
   t.is(headers.referer, `${testAppURL}/prompt?id=${testID}`);
 });
 
-test("POST '/visit' steps can dismiss prompts", async t => {
+test.serial("POST '/visit' steps can dismiss prompts", async t => {
   const { app, testApp, testAppURL } = t.context;
   const testID = uuid4();
 
@@ -711,6 +731,8 @@ test("POST '/visit' steps can dismiss prompts", async t => {
       ],
     },
   });
+
+  await whenJobsFinished();
 
   const inspection = await testApp.inject({
     method: "GET",
@@ -737,6 +759,7 @@ test("POST '/visit' steps run actions in an isolated context", async t => {
           actions: ["page.; process.exit()"],
         },
       ],
+      screenshot: true,
     },
   });
 
@@ -757,6 +780,7 @@ test("POST '/visit' steps run actions in an isolated context", async t => {
           actions: ["page.; require('child_process').execSync('id')"],
         },
       ],
+      screenshot: true,
     },
   });
   t.is(response_2.statusCode, 400);
@@ -778,6 +802,7 @@ test("POST '/visit' steps run actions in an isolated context", async t => {
           ],
         },
       ],
+      screenshot: true,
     },
   });
   t.is(response_3.statusCode, 400);
@@ -798,6 +823,7 @@ test("POST '/visit' steps run actions in an isolated context", async t => {
           actions: ["page.; this.constructor.constructor('return process')().exit()"],
         },
       ],
+      screenshot: true,
     },
   });
   t.is(response_4.statusCode, 400);
@@ -809,7 +835,7 @@ test("POST '/visit' steps run actions in an isolated context", async t => {
   });
 });
 
-test("POST '/visit' accepts snake cased method names", async t => {
+test.serial("POST '/visit' accepts snake cased method names", async t => {
   const { app, testApp, testAppURL } = t.context;
   const testID = uuid4();
 
@@ -825,6 +851,8 @@ test("POST '/visit' accepts snake cased method names", async t => {
       ],
     },
   });
+
+  await whenJobsFinished();
 
   const inspection = await testApp.inject({
     method: "GET",
