@@ -48,9 +48,13 @@ export const LegacyVisit400Reply = Type.Object({
 export type LegacyVisit400ReplyType = Static<typeof LegacyVisit400Reply>;
 
 export const LegacyVisit200Reply = Type.Object({
-  status: Type.Union([Type.Literal("ok"), Type.Literal("scheduled")]),
-  screenshot: Type.Optional(Type.String()),
-  video: Type.Optional(Type.String()),
-  pdf: Type.Optional(Type.String()),
+  status: Type.Union([Type.Literal("success"), Type.Literal("scheduled")]),
+  result: Type.Optional(
+    Type.Object({
+      screenshot: Type.Optional(Type.String()),
+      video: Type.Optional(Type.String()),
+      pdf: Type.Optional(Type.String()),
+    }),
+  ),
 });
 export type LegacyVisit200ReplyType = Static<typeof LegacyVisit200Reply>;

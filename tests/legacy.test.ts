@@ -14,11 +14,14 @@ const test = anyTest as TestFn<{
   testAppURL: string;
 }>;
 
+const base64regex = /^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)?$/;
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 const whenJobsFinished = async () => {
-  // check if the queue has been emptied every 100ms
-  // bull has no method for that, so it has to be done like this
+  // check if the queue has no active and pending jobs every 100ms
+  // whenJobsFinished only accounts for active jobs
+  // in addition there's a slight time window before the job
+  // is scheduled, so it might trigger on an empty queue
   while (true) {
     await sleep(100);
     const { waiting, active } = await SimpleVisitQueue.getJobCounts();
@@ -28,6 +31,11 @@ const whenJobsFinished = async () => {
     }
   }
 };
+
+test.beforeEach(async t => {
+  // make sure queue is clean before proceeding
+  await SimpleVisitQueue.clean(100);
+});
 
 test.before(async t => {
   const app = await createApp({ logger: false });
@@ -95,7 +103,11 @@ test("POST '/visit' records video", async t => {
   });
 
   t.is(response.statusCode, 200);
-  t.truthy(response.json().video);
+
+  const body = response.json();
+  t.assert(body.hasOwnProperty("result"));
+  t.assert(body.result.hasOwnProperty("video"));
+  t.truthy(base64regex.exec(body.result.video));
 });
 
 test("POST '/visit' creates pdf", async t => {
@@ -111,7 +123,11 @@ test("POST '/visit' creates pdf", async t => {
   });
 
   t.is(response.statusCode, 200);
-  t.truthy(response.json().pdf);
+
+  const body = response.json();
+  t.assert(body.hasOwnProperty("result"));
+  t.assert(body.result.hasOwnProperty("pdf"));
+  t.truthy(base64regex.exec(body.result.pdf));
 });
 
 test("POST '/visit' creates screenshot", async t => {
@@ -129,10 +145,9 @@ test("POST '/visit' creates screenshot", async t => {
   t.is(response.statusCode, 200);
 
   const body = response.json();
-  t.assert(body.hasOwnProperty("screenshot"));
-
-  const base64regex = /^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)?$/;
-  t.truthy(base64regex.exec(body.screenshot));
+  t.assert(body.hasOwnProperty("result"));
+  t.assert(body.result.hasOwnProperty("screenshot"));
+  t.truthy(base64regex.exec(body.result.screenshot));
 });
 
 test("POST '/visit' does not accept multiple record, pdf, screenshot properties", async t => {
