@@ -23,7 +23,7 @@
     "@fastify/swagger": "^8.1.0",
     "@fastify/swagger-ui": "^1.2.0",
     "@fastify/type-provider-typebox": "^2.4.0",
-    "@sinclair/typebox": "^0.25.8",
+    "@sinclair/typebox": "^0.25.10",
     "bull": "^4.10.2",
     "fastify": "^4.10.2",
     "lodash": "^4.17.21",
