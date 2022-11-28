@@ -51,13 +51,13 @@ export const legacyReturningVisitJob = async (data: ReturningVisitJobData) => {
   if (data.screenshot) {
     const screenshotBuffer = await runner.page!.screenshot({ fullPage: true });
     const file = screenshotBuffer.toString("base64");
-    return { status: "ok", screenshot: file };
+    return { status: "success", result: { screenshot: file } };
   }
 
   if (data.pdf) {
     const pdfBuffer = await runner.page!.pdf();
     const file = pdfBuffer.toString("base64");
-    return { status: "ok", pdf: file };
+    return { status: "success", result: { pdf: file } };
   }
 
   await runner.teardown();
@@ -70,7 +70,7 @@ export const legacyReturningVisitJob = async (data: ReturningVisitJobData) => {
       const videoBuffer = fs.readFileSync(path);
       const file = videoBuffer.toString("base64");
       fs.unlinkSync(path);
-      return { status: "ok", video: file };
+      return { status: "success", result: { video: file } };
     }
   }
 };
