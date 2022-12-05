@@ -6,7 +6,9 @@ import Fastify, {
 } from "fastify";
 import formbody from "@fastify/formbody";
 
-const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+// @ts-ignore: tests directory is not under rootDir, because we're using ts-node for testing
+import { sleep } from "./_common";
+
 type RecordingRequest = FastifyRequest<{
   Querystring: { id: string };
 }>;
@@ -146,7 +148,7 @@ export const startTestApp = async (
   try {
     await app.listen(listenOptions);
   } catch (e) {
-    app.log.error(e);
+    console.log(e);
     process.exit(1);
   }
 

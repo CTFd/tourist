@@ -1,39 +1,36 @@
-import * as fs from "fs";
-import * as path from "path";
-
 import test from "ava";
 import { createApp } from "../src/app";
+import { getConfig } from "../src/config";
 
-test("createApp creates openapi.json", async t => {
-  const openapi = path.resolve(__dirname, "..", "static", "openapi.json");
-  if (openapi) {
-    fs.rmSync(openapi);
-  }
+test("GET '/docs/json' returns the specification with legacy API enabled", async (t) => {
+  const app = await createApp({ logger: false }, getConfig());
 
-  const app = await createApp({ logger: false });
   const response = await app.inject({
     method: "GET",
-    url: "/openapi.json",
+    url: "/docs/json",
   });
 
   t.is(response.statusCode, 200);
   t.snapshot(response.json());
 });
 
-test("GET '/openapi.json' returns the specification", async t => {
-  const app = await createApp({ logger: false });
+test("GET '/docs/json' returns the specification with legacy API disabled", async (t) => {
+  const app = await createApp(
+    { logger: false },
+    getConfig({ ENABLE_LEGACY_API: false }),
+  );
 
   const response = await app.inject({
     method: "GET",
-    url: "/openapi.json",
+    url: "/docs/json",
   });
 
   t.is(response.statusCode, 200);
   t.snapshot(response.json());
 });
 
-test("GET '/' redirects to docs", async t => {
-  const app = await createApp({ logger: false });
+test("GET '/' redirects to docs", async (t) => {
+  const app = await createApp({ logger: false }, getConfig());
 
   const response = await app.inject({
     method: "GET",
@@ -45,8 +42,8 @@ test("GET '/' redirects to docs", async t => {
   t.is(response.headers.location, "/docs");
 });
 
-test("GET '/docs' displays Swagger UI", async t => {
-  const app = await createApp({ logger: false });
+test("GET '/docs' displays Swagger UI", async (t) => {
+  const app = await createApp({ logger: false }, getConfig());
 
   const response = await app.inject({
     method: "GET",

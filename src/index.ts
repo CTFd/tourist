@@ -1,33 +1,15 @@
 import { createApp } from "./app";
+import { getConfig } from "./config";
 
 (async () => {
-  let logger: boolean | object = true;
-  if (process.env.NODE_ENV !== "production") {
-    logger = {
-      transport: {
-        target: "pino-pretty",
-        options: {
-          translateTime: "HH:MM:ss Z",
-          ignore: "pid,hostname",
-        },
-      },
-    };
-  }
+  const config = getConfig();
 
-  const app = await createApp({ logger });
-
-  let host: string = "127.0.0.1";
-  if (process.env.HOST) {
-    host = process.env.HOST;
-  }
-
-  let port: number = 3000;
-  if (process.env.PORT) {
-    port = parseInt(process.env.PORT);
-  }
+  let logger: boolean = true;
+  const app = await createApp({ logger }, config);
 
   try {
-    await app.listen({ host, port });
+    const { HOST, PORT } = config;
+    await app.listen({ host: HOST, port: PORT });
   } catch (e) {
     app.log.error(e);
     process.exit(1);

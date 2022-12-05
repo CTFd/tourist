@@ -1,21 +1,5 @@
 import _ from "lodash";
 
-// this function performs basic validation of the code, to provide an explicit error message within normal usage
-// it is not a security mechanism, security is handled by the context isolation
-export const validateLegacyActions = (actions: string[]): boolean => {
-  for (const action of actions) {
-    if (!action.startsWith("page.")) {
-      throw new Error(`invalid action "${action}" - does not start with "page."`);
-    }
-
-    if (!(action.endsWith(")") || action.endsWith(");"))) {
-      throw new Error(`invalid action "${action}" - does not end with ")" or ");"`);
-    }
-  }
-
-  return true;
-};
-
 // this function converts actions from snake_case to camelCase with copied arguments
 // legacy api utilized python playwright, hence functions used to be in snake_case
 // it is not bulletproof, and will only convert simple, single line statements, which should be all that's needed
