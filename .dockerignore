@@ -34,7 +34,7 @@ web_modules/
 .node_repl_history
 *.tgz
 .yarn-integrity
-.env.example
+.env
 .env.test
 .cache
 .parcel-cache
