@@ -9,7 +9,6 @@ import { JobBrowser } from "../src/schemas/api";
 import { startTestApp } from "./utils/_app";
 import { getFreePort } from "./utils/_common";
 
-
 const test = anyTest as TestFn<{
   testApp: FastifyInstance;
   testAppURL: string;
@@ -32,7 +31,7 @@ test.before(async (t) => {
 test.after(async (t) => {
   const { testApp } = t.context;
   await testApp.close();
-})
+});
 
 const testCookie = (name: string, value: string) => {
   return {

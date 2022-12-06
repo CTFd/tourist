@@ -39,7 +39,7 @@ test.before(async (t) => {
 test.after(async (t) => {
   const { app, testApp } = t.context;
   await Promise.all([app.close(), testApp.close()]);
-})
+});
 
 test("GET '/visit' returns not found", async (t) => {
   const { app } = t.context;

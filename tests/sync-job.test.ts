@@ -9,7 +9,6 @@ import { JobBrowser, JobOptions } from "../src/schemas/api";
 import { startTestApp } from "./utils/_app";
 import { base64regex, getFreePort } from "./utils/_common";
 
-
 const test = anyTest as TestFn<{
   app: FastifyInstance;
   testApp: FastifyInstance;
@@ -36,7 +35,7 @@ test.before(async (t) => {
 test.after(async (t) => {
   const { app, testApp } = t.context;
   await Promise.all([app.close(), testApp.close()]);
-})
+});
 
 test("GET '/api/v1/sync-job' returns not found", async (t) => {
   const { app } = t.context;
