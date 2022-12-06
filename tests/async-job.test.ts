@@ -393,34 +393,6 @@ test.serial("POST '/api/v1/async-job' accepts firefox browser", async (t) => {
   t.assert(result.result.hasOwnProperty("screenshot"));
   t.is(base64regex.test(result.result.screenshot), true);
 });
-test.serial("POST '/api/v1/async-job' accepts webkit browser", async (t) => {
-  const { app, testAppURL } = t.context;
-
-  const response = await app.inject({
-    method: "POST",
-    url: "/api/v1/async-job",
-    payload: {
-      browser: JobBrowser.WEBKIT,
-      steps: [{ url: testAppURL }],
-      options: [JobOptions.SCREENSHOT],
-    },
-  });
-
-  t.is(response.statusCode, 200);
-  const data = response.json();
-  t.assert(data.hasOwnProperty("status"));
-  t.assert(data.hasOwnProperty("id"));
-  t.is(data.status, "scheduled");
-  t.assert(typeof data.id === "number");
-
-  const result = await asyncJobResult(app, data.id);
-  t.assert(result.hasOwnProperty("status"));
-  t.is(result.status, "success");
-
-  t.assert(result.hasOwnProperty("result"));
-  t.assert(result.result.hasOwnProperty("screenshot"));
-  t.is(base64regex.test(result.result.screenshot), true);
-});
 
 test("POST '/api/v1/async-job' rejects unknown browsers", async (t) => {
   const { app, testAppURL } = t.context;

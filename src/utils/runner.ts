@@ -49,10 +49,6 @@ export class PlaywrightRunner {
       case JobBrowser.FIREFOX:
         this.browser = await playwright.firefox.launch();
         break;
-
-      case JobBrowser.WEBKIT:
-        this.browser = await playwright.webkit.launch();
-        break;
     }
 
     if (this.options.includes(JobOptions.RECORD)) {
@@ -113,6 +109,7 @@ export class PlaywrightRunner {
       }
 
       await this.page.goto(step.url);
+      await this.page.waitForLoadState();
 
       // run all post-open actions for this step
       for (const postOpenAction of actions.postOpen) {

@@ -335,27 +335,6 @@ test.serial("POST '/api/v1/sync-job' accepts firefox browser", async (t) => {
   t.assert(body.result.hasOwnProperty("screenshot"));
   t.is(base64regex.test(body.result.screenshot), true);
 });
-test.serial("POST '/api/v1/sync-job' accepts webkit browser", async (t) => {
-  const { app, testAppURL } = t.context;
-
-  const response = await app.inject({
-    method: "POST",
-    url: "/api/v1/sync-job",
-    payload: {
-      browser: JobBrowser.WEBKIT,
-      steps: [{ url: testAppURL }],
-      options: [JobOptions.SCREENSHOT],
-    },
-  });
-
-  t.is(response.statusCode, 200);
-
-  const body = response.json();
-  t.is(body.status, "success");
-  t.assert(body.hasOwnProperty("result"));
-  t.assert(body.result.hasOwnProperty("screenshot"));
-  t.is(base64regex.test(body.result.screenshot), true);
-});
 
 test("POST '/api/v1/sync-job' rejects unknown browsers", async (t) => {
   const { app, testAppURL } = t.context;

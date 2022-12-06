@@ -171,7 +171,7 @@ test("PlaywrightRunner waits for loaded state", async (t) => {
   const start = performance.now();
   const runner = new PlaywrightRunner({
     browser: JobBrowser.CHROMIUM,
-    steps: [{ url: `${testAppURL}/loading` }],
+    steps: [{ url: `${testAppURL}/loading`, actions: [] }],
     cookies: [],
     options: [],
   });
@@ -184,7 +184,7 @@ test("PlaywrightRunner waits for loaded state", async (t) => {
   const execution = end - start;
 
   // 5s is both too long for usual execution and not too long for testing purposes
-  t.assert(execution > 5500);
+  t.assert(execution > 5300);
 });
 
 test("PlaywrightRunner steps can interact with anchors", async (t) => {

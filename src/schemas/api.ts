@@ -3,7 +3,6 @@ import { Static, Type } from "@sinclair/typebox";
 export enum JobBrowser {
   CHROMIUM = "CHROMIUM",
   FIREFOX = "FIREFOX",
-  WEBKIT = "WEBKIT",
 }
 export enum JobOptions {
   RECORD = "RECORD",
