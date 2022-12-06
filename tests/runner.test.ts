@@ -2,11 +2,13 @@ import { FastifyInstance } from "fastify";
 import anyTest, { TestFn } from "ava";
 import { v4 as uuid4 } from "uuid";
 
+import { PlaywrightRunner } from "../src/utils/runner";
+import { JobBrowser } from "../src/schemas/api";
+
 // @ts-ignore: tests directory is not under rootDir, because we're using ts-node for testing
 import { startTestApp } from "./utils/_app";
 import { getFreePort } from "./utils/_common";
-import { PlaywrightRunner } from "../src/utils/runner";
-import { JobBrowser } from "../src/schemas/api";
+
 
 const test = anyTest as TestFn<{
   testApp: FastifyInstance;
@@ -26,6 +28,11 @@ test.before(async (t) => {
     testAppURL: `http://localhost:${testAppPort}`,
   };
 });
+
+test.after(async (t) => {
+  const { testApp } = t.context;
+  await testApp.close();
+})
 
 const testCookie = (name: string, value: string) => {
   return {
@@ -54,9 +61,10 @@ test("PlaywrightRunner attaches cookies", async (t) => {
         secure: false,
       },
       {
-        name: "test",
-        value: "test",
-        url: `${testAppURL}/record-req`,
+        name: "test2",
+        value: "test2",
+        domain: "localhost",
+        path: "/",
         httpOnly: false,
         secure: false,
       },

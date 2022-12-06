@@ -12,6 +12,8 @@ test("GET '/docs/json' returns the specification with legacy API enabled", async
 
   t.is(response.statusCode, 200);
   t.snapshot(response.json());
+
+  await app.close();
 });
 
 test("GET '/docs/json' returns the specification with legacy API disabled", async (t) => {
@@ -27,6 +29,7 @@ test("GET '/docs/json' returns the specification with legacy API disabled", asyn
 
   t.is(response.statusCode, 200);
   t.snapshot(response.json());
+  await app.close();
 });
 
 test("GET '/' redirects to docs", async (t) => {
@@ -40,6 +43,7 @@ test("GET '/' redirects to docs", async (t) => {
   t.is(response.statusCode, 302);
   t.assert(response.headers.hasOwnProperty("location"));
   t.is(response.headers.location, "/docs");
+  await app.close();
 });
 
 test("GET '/docs' displays Swagger UI", async (t) => {
@@ -52,4 +56,5 @@ test("GET '/docs' displays Swagger UI", async (t) => {
 
   t.is(response.statusCode, 200);
   t.assert(response.body.includes("Swagger UI"));
+  await app.close();
 });

@@ -2,13 +2,14 @@ import anyTest, { TestFn } from "ava";
 import { FastifyInstance } from "fastify";
 
 import { createApp } from "../src/app";
+import { JobBrowser, JobOptions } from "../src/schemas/api";
+import { getConfig } from "../src/config";
+import { AsyncVisitQueue } from "../src/queue";
 
 // @ts-ignore: tests directory is not under rootDir, because we're using ts-node for testing
 import { startTestApp } from "./utils/_app";
 import { asyncJobResult, base64regex, getFreePort } from "./utils/_common";
-import { JobBrowser, JobOptions } from "../src/schemas/api";
-import { getConfig } from "../src/config";
-import { AsyncVisitQueue } from "../src/queue";
+
 
 const test = anyTest as TestFn<{
   app: FastifyInstance;
@@ -34,6 +35,11 @@ test.before(async (t) => {
     testAppURL: `http://localhost:${testAppPort}`,
   };
 });
+
+test.after(async (t) => {
+  const { app, testApp } = t.context;
+  await Promise.all([app.close(), testApp.close()]);
+})
 
 test("GET '/api/v1/async-job' returns not found", async (t) => {
   const { app } = t.context;

@@ -2,10 +2,11 @@ import { FastifyInstance } from "fastify";
 import anyTest, { TestFn } from "ava";
 
 import { createApp } from "../src/app";
+import { getConfig } from "../src/config";
+import { LegacySimpleVisitQueue } from "../src/queue";
 
 // @ts-ignore: tests directory is not under rootDir, because we're using ts-node for testing
 import { startTestApp } from "./utils/_app";
-import { getConfig } from "../src/config";
 
 const test = anyTest as TestFn<{
   app: FastifyInstance;
@@ -16,6 +17,8 @@ const test = anyTest as TestFn<{
 const base64regex = /^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)?$/;
 
 test.before(async (t) => {
+  await LegacySimpleVisitQueue.clean(100);
+
   const app = await createApp(
     { logger: false },
     getConfig({ ENABLE_LEGACY_API: true }),
@@ -32,6 +35,11 @@ test.before(async (t) => {
     testAppURL: `http://localhost:3333`,
   };
 });
+
+test.after(async (t) => {
+  const { app, testApp } = t.context;
+  await Promise.all([app.close(), testApp.close()]);
+})
 
 test("GET '/visit' returns not found", async (t) => {
   const { app } = t.context;
