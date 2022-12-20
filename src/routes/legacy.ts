@@ -13,9 +13,10 @@ import {
   LegacyVisit200Reply,
   LegacyVisit400Reply,
 } from "../schemas/legacy";
-import { SimpleVisitQueue } from "../queue";
-import { validateLegacyActions, camelizeLegacyActions } from "../utils/legacy";
+import { validateActions } from "../utils/validation";
+import { camelizeLegacyActions } from "../utils/legacy/actions";
 import { legacyReturningVisitJob } from "../jobs/legacy";
+import { LegacySimpleVisitQueue } from "../queue";
 
 export default (
   fastify: FastifyInstance,
@@ -49,20 +50,14 @@ const handleVisit = async (request: FastifyRequest, reply: FastifyReply) => {
     });
   }
 
-  for (const step of steps) {
-    if (step.actions) {
-      try {
-        validateLegacyActions(step.actions);
-      } catch (e: any) {
-        request.log.error(e.message);
-
-        return reply.status(400).send({
-          statusCode: 400,
-          error: "Bad Request",
-          message: e.message,
-        });
-      }
-    }
+  const validationResult = validateActions(steps);
+  if (validationResult !== true) {
+    // convert new validation result to legacy API format
+    return reply.status(400).send({
+      statusCode: 400,
+      error: "Bad Request",
+      message: validationResult.message,
+    });
   }
 
   for (const step of steps) {
@@ -73,7 +68,7 @@ const handleVisit = async (request: FastifyRequest, reply: FastifyReply) => {
 
   // dispatch a background job if it's a simple visit request
   if (!record && !screenshot && !pdf) {
-    SimpleVisitQueue.add({
+    await LegacySimpleVisitQueue.add({
       steps,
       cookies,
     });

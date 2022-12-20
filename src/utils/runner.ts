@@ -1,46 +1,57 @@
 import os from "os";
-import _ from "lodash";
-import playwright, { Browser, BrowserContext, Page } from "playwright";
-import { VM } from "vm2";
-import { LegacyCookieType, LegacyStepType } from "../schemas/legacy";
+import fs from "fs";
 
-declare type LegacyPlaywrightRunnerData = {
-  steps: LegacyStepType[];
-  cookies: LegacyCookieType[];
-  record: boolean;
-  screenshot: boolean;
-  pdf: boolean;
+import _ from "lodash";
+import { VM } from "vm2";
+import playwright, { Browser, BrowserContext, Page } from "playwright";
+
+import {
+  JobBrowser,
+  JobCookieType,
+  JobOptions,
+  JobResultType,
+  JobStepType,
+} from "../schemas/api";
+
+export declare type PlaywrightRunnerData = {
+  browser: JobBrowser;
+  steps: JobStepType[];
+  cookies: JobCookieType[];
+  options: JobOptions[];
 };
 
-// LegacyPlaywrightRunner is a wrapper around playwright that executes legacy steps
-// with actions in an isolated context. It supports both simple and returning jobs.
-// it expects already validated and camelized actions,
-// validation should be done in the controller to return an explicit error message to the user.
-export class LegacyPlaywrightRunner {
+// PlaywrightRunner executes steps and actions in an isolated context
+export class PlaywrightRunner {
   public browser?: Browser;
   public context?: BrowserContext;
   public page?: Page;
 
-  private readonly steps: LegacyStepType[];
-  private readonly cookies: LegacyCookieType[];
-  private readonly record: boolean = false;
-  private readonly screenshot: boolean = false;
-  private readonly pdf: boolean = false;
+  public readonly browserKind: JobBrowser;
+  public readonly steps: JobStepType[];
+  public readonly cookies: JobCookieType[];
+  public options: JobOptions[] = [];
 
-  constructor(data: LegacyPlaywrightRunnerData) {
+  constructor(data: PlaywrightRunnerData) {
+    this.browserKind = data.browser;
     this.steps = data.steps;
     this.cookies = data.cookies;
-    this.record = data.record;
-    this.screenshot = data.screenshot;
-    this.pdf = data.pdf;
+    this.options = data.options;
   }
 
   // init() initializes playwright: browser, context and page
   // it is intentionally separated from exec to allow for modifying playwright
   public async init() {
-    this.browser = await playwright.chromium.launch();
+    switch (this.browserKind) {
+      case JobBrowser.CHROMIUM:
+        this.browser = await playwright.chromium.launch();
+        break;
 
-    if (this.record) {
+      case JobBrowser.FIREFOX:
+        this.browser = await playwright.firefox.launch();
+        break;
+    }
+
+    if (this.options.includes(JobOptions.RECORD)) {
       this.context = await this.browser.newContext({
         recordVideo: { dir: os.tmpdir() },
       });
@@ -73,7 +84,7 @@ export class LegacyPlaywrightRunner {
       };
 
       if (step.actions) {
-        [actions.preOpen, actions.postOpen] = _.partition(step.actions, action =>
+        [actions.preOpen, actions.postOpen] = _.partition(step.actions, (action) =>
           action.startsWith("page.on"),
         );
       }
@@ -98,6 +109,7 @@ export class LegacyPlaywrightRunner {
       }
 
       await this.page.goto(step.url);
+      await this.page.waitForLoadState();
 
       // run all post-open actions for this step
       for (const postOpenAction of actions.postOpen) {
@@ -109,6 +121,43 @@ export class LegacyPlaywrightRunner {
         }
       }
     }
+  }
+
+  // finish() will gather requested results as well as close both the context and browser
+  public async finish(): Promise<JobResultType> {
+    if (!this.page) {
+      throw new Error(
+        `Attempted to finish() on an uninitialized runner, did you forget to call init() or has teardown() already been called?`,
+      );
+    }
+
+    const result: JobResultType = {};
+
+    if (this.options.includes(JobOptions.SCREENSHOT)) {
+      const screenshotBuffer = await this.page!.screenshot({ fullPage: true });
+      result.screenshot = screenshotBuffer.toString("base64");
+    }
+
+    if (this.options.includes(JobOptions.PDF)) {
+      const pdfBuffer = await this.page!.pdf();
+      result.pdf = pdfBuffer.toString("base64");
+    }
+
+    await this.teardown();
+
+    if (this.options.includes(JobOptions.RECORD)) {
+      const video = await this.page!.video();
+
+      if (video) {
+        const path = await video.path();
+        const videoBuffer = fs.readFileSync(path);
+        const file = videoBuffer.toString("base64");
+        fs.unlinkSync(path);
+        result.video = file;
+      }
+    }
+
+    return result;
   }
 
   // teardown() removes the browser and context from the instance as well as closes them

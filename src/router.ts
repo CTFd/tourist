@@ -1,6 +1,8 @@
 import { FastifyInstance, FastifyPluginOptions } from "fastify";
 import legacy from "./routes/legacy";
 import healthcheck from "./routes/healthcheck";
+import api from "./routes/api";
+import auth from "./routes/auth";
 
 export const createRouter =
   () =>
@@ -13,8 +15,16 @@ export const createRouter =
       reply.redirect("/docs");
     });
 
-    fastify.register(legacy);
-    fastify.register(healthcheck, { prefix: "/api" });
+    if (fastify.config.ENABLE_LEGACY_API) {
+      fastify.register(legacy);
+    }
+
+    if (fastify.config.ENABLE_AUTHENTICATION) {
+      fastify.register(auth, { prefix: "/api/v1" });
+    }
+
+    fastify.register(healthcheck, { prefix: "/api/v1" });
+    fastify.register(api, { prefix: "/api/v1" });
 
     done();
   };

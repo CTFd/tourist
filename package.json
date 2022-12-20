@@ -7,25 +7,28 @@
   "author": "Miłosz Skaza <milosz.skaza@ctfd.io>",
   "license": "Apache-2.0",
   "scripts": {
+    "cmd:get-issuer-token": "ts-node ./src/cli.ts get-issuer-token",
     "build": "rm -rf ./out && tsc -p tsconfig.json",
     "start:serve": "node ./src/index.js",
     "start:build": "yarn build && node out/index.js",
-    "start:app": "nodemon --ignore static/openapi.json ./src/index.ts",
-    "start:test-app": "nodemon --ignore /static/openapi.json ./tests/utils/_server.ts",
+    "start:app": "nodemon ./src/index.ts | pino-pretty",
+    "start:test-app": "nodemon ./tests/utils/_server.ts",
     "format": "prettier '{src,tests}/**/*.ts' --write",
     "lint": "prettier --check '{src,tests}/**/*.ts'",
     "test": "ava",
+    "test:ci": "ava --serial",
     "test:watch": "ava --watch",
-    "test:cov": "c8 ava"
+    "test:cov": "c8 ava --serial"
   },
   "dependencies": {
-    "@fastify/static": "^6.5.1",
     "@fastify/swagger": "^8.1.0",
     "@fastify/swagger-ui": "^1.3.0",
     "@fastify/type-provider-typebox": "^2.4.0",
     "@sinclair/typebox": "^0.25.10",
     "bull": "^4.10.2",
+    "dotenv": "^16.0.3",
     "fastify": "^4.10.2",
+    "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.21",
     "playwright": "^1.28.1",
     "vm2": "^3.9.11"
@@ -33,6 +36,7 @@
   "devDependencies": {
     "@fastify/formbody": "^7.3.0",
     "@types/bull": "^4.10.0",
+    "@types/jsonwebtoken": "^8.5.9",
     "@types/lodash": "^4.14.190",
     "@types/node": "^18.11.9",
     "@types/uuid": "^8.3.4",
@@ -47,8 +51,7 @@
   },
   "prettier": {
     "trailingComma": "all",
-    "printWidth": 88,
-    "arrowParens": "avoid"
+    "printWidth": 88
   },
   "ava": {
     "extensions": {

@@ -1,15 +1,14 @@
-import fs from "fs";
 import { Job } from "bull";
 
 import { LegacyCookieType, LegacyStepType } from "../schemas/legacy";
-import { LegacyPlaywrightRunner } from "../utils/runner";
+import { LegacyPlaywrightRunner } from "../utils/legacy/runner";
 
-export declare type SimpleVisitJobData = {
+export declare type LegacySimpleVisitJobData = {
   steps: LegacyStepType[];
   cookies: LegacyCookieType[];
 };
 
-export const legacySimpleVisitJob = async (job: Job<SimpleVisitJobData>) => {
+export const legacySimpleVisitJob = async (job: Job<LegacySimpleVisitJobData>) => {
   const runner = new LegacyPlaywrightRunner({
     ...job.data,
     screenshot: false,
@@ -20,13 +19,15 @@ export const legacySimpleVisitJob = async (job: Job<SimpleVisitJobData>) => {
   try {
     await runner.init();
     await runner.exec();
-    await runner.teardown();
-  } catch (e) {
-    console.error(e);
+
+    // in a legacy simple job results can be discarded as there will never be any
+    await runner.finish();
+  } catch (e: any) {
+    await job.moveToFailed({ message: e.message });
   }
 };
 
-export declare type ReturningVisitJobData = {
+export declare type LegacyReturningVisitJobData = {
   steps: LegacyStepType[];
   cookies: LegacyCookieType[];
   record: boolean;
@@ -37,7 +38,7 @@ export declare type ReturningVisitJobData = {
 // this is not a scheduler job but accomplishes similar goals, so it's been put here for logical separation
 // in fact it's just an async function that does the visiting job and returns necessary data
 // it can't be scheduled because it needs to return data
-export const legacyReturningVisitJob = async (data: ReturningVisitJobData) => {
+export const legacyReturningVisitJob = async (data: LegacyReturningVisitJobData) => {
   const runner = new LegacyPlaywrightRunner(data);
 
   try {
@@ -48,29 +49,6 @@ export const legacyReturningVisitJob = async (data: ReturningVisitJobData) => {
     throw e;
   }
 
-  if (data.screenshot) {
-    const screenshotBuffer = await runner.page!.screenshot({ fullPage: true });
-    const file = screenshotBuffer.toString("base64");
-    return { status: "success", result: { screenshot: file } };
-  }
-
-  if (data.pdf) {
-    const pdfBuffer = await runner.page!.pdf();
-    const file = pdfBuffer.toString("base64");
-    return { status: "success", result: { pdf: file } };
-  }
-
-  await runner.teardown();
-
-  if (data.record) {
-    const video = await runner.page!.video();
-
-    if (video) {
-      const path = await video.path();
-      const videoBuffer = fs.readFileSync(path);
-      const file = videoBuffer.toString("base64");
-      fs.unlinkSync(path);
-      return { status: "success", result: { video: file } };
-    }
-  }
+  const result = await runner.finish();
+  return { status: "success", result };
 };
