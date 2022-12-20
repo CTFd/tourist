@@ -1,9 +1,11 @@
 import test from "ava";
 import { createApp } from "../src/app";
-import { getConfig } from "../src/config";
+
+// @ts-ignore: tests directory is not under rootDir, because we're using ts-node for testing
+import { getTestConfig } from "./utils/_common";
 
 test("GET '/docs/json' returns the specification with legacy API enabled", async (t) => {
-  const app = await createApp({ logger: false }, getConfig());
+  const app = await createApp({ logger: false }, getTestConfig());
 
   const response = await app.inject({
     method: "GET",
@@ -19,7 +21,7 @@ test("GET '/docs/json' returns the specification with legacy API enabled", async
 test("GET '/docs/json' returns the specification with legacy API disabled", async (t) => {
   const app = await createApp(
     { logger: false },
-    getConfig({ ENABLE_LEGACY_API: false }),
+    getTestConfig({ ENABLE_LEGACY_API: false }),
   );
 
   const response = await app.inject({
@@ -33,7 +35,7 @@ test("GET '/docs/json' returns the specification with legacy API disabled", asyn
 });
 
 test("GET '/' redirects to docs", async (t) => {
-  const app = await createApp({ logger: false }, getConfig());
+  const app = await createApp({ logger: false }, getTestConfig());
 
   const response = await app.inject({
     method: "GET",
@@ -47,7 +49,7 @@ test("GET '/' redirects to docs", async (t) => {
 });
 
 test("GET '/docs' displays Swagger UI", async (t) => {
-  const app = await createApp({ logger: false }, getConfig());
+  const app = await createApp({ logger: false }, getTestConfig());
 
   const response = await app.inject({
     method: "GET",

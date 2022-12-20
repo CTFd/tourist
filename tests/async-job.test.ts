@@ -3,12 +3,16 @@ import { FastifyInstance } from "fastify";
 
 import { createApp } from "../src/app";
 import { JobBrowser, JobOptions } from "../src/schemas/api";
-import { getConfig } from "../src/config";
 import { AsyncVisitQueue } from "../src/queue";
 
 // @ts-ignore: tests directory is not under rootDir, because we're using ts-node for testing
 import { startTestApp } from "./utils/_app";
-import { asyncJobResult, base64regex, getFreePort } from "./utils/_common";
+import {
+  asyncJobResult,
+  base64regex,
+  getFreePort,
+  getTestConfig,
+} from "./utils/_common";
 
 const test = anyTest as TestFn<{
   app: FastifyInstance;
@@ -19,7 +23,10 @@ const test = anyTest as TestFn<{
 test.before(async (t) => {
   await AsyncVisitQueue.clean(100);
 
-  const app = await createApp({ logger: false }, getConfig());
+  const app = await createApp(
+    { logger: false },
+    getTestConfig({ ENABLE_AUTHENTICATION: false }),
+  );
 
   const testAppPort = await getFreePort();
   const testApp = await startTestApp(
@@ -409,4 +416,21 @@ test("POST '/api/v1/async-job' rejects unknown browsers", async (t) => {
 
   t.is(response.statusCode, 400);
   t.is(response.json().error, "Bad Request");
+});
+
+test("GET '/api/v1/job-status' returns 404 if job is not found", async (t) => {
+  const { app } = t.context;
+
+  const response = await app.inject({
+    method: "GET",
+    url: "/api/v1/job-status?id=7823423",
+  });
+
+  t.is(response.statusCode, 404);
+  const data = response.json();
+  t.deepEqual(data, {
+    statusCode: 404,
+    error: "Not Found",
+    message: "Job with id '7823423' does not exist!",
+  });
 });

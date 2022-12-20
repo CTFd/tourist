@@ -1,9 +1,7 @@
 import { createApp } from "./app";
-import { getConfig } from "./config";
+import config from "./config";
 
 (async () => {
-  const config = getConfig();
-
   let logger: boolean = true;
   const app = await createApp({ logger }, config);
 

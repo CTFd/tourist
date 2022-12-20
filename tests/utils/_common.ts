@@ -1,5 +1,6 @@
 import net from "net";
-import { FastifyInstance } from "fastify";
+import { FastifyInstance, InjectOptions } from "fastify";
+import config from "../../src/config";
 
 export const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -9,18 +10,31 @@ export const base64regex =
 export const asyncJobResult = async (
   app: FastifyInstance,
   id: number,
+  token: string | false = false,
   interval: number = 250,
 ): Promise<any> => {
   while (true) {
     await sleep(interval);
 
-    const response = await app.inject({
-      method: "GET",
-      url: `/api/v1/job-status?id=${id}`,
-    });
+    let options: InjectOptions;
+    if (!token) {
+      options = {
+        method: "GET",
+        url: `/api/v1/job-status?id=${id}`,
+      };
+    } else {
+      options = {
+        method: "GET",
+        url: `/api/v1/job-status?id=${id}`,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
+    }
 
+    const response = await app.inject(options);
     const data = response.json();
-    if (data.status !== "pending") {
+    if (!data.status || data.status !== "pending") {
       return data;
     }
   }
@@ -41,4 +55,14 @@ export const getFreePort = async (): Promise<number> => {
       }
     });
   });
+};
+export const getTestConfig = (overrides: any = {}) => {
+  return {
+    ...config,
+    ...overrides,
+  };
+};
+
+export const timestamp = (): number => {
+  return Math.floor(Date.now() / 1000);
 };

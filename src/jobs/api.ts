@@ -18,7 +18,7 @@ export const asyncVisitJob = async (job: Job<VisitJobData>) => {
     await runner.init();
     await runner.exec();
   } catch (e: any) {
-    // change the job status to failed wit the error message
+    // change the job status to failed with the error message
     await job.moveToFailed({ message: e.message });
   }
 

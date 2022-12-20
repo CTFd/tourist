@@ -44,6 +44,12 @@ export const JobResult = Type.Object({
 
 export type JobResultType = Static<typeof JobResult>;
 
+export const JobDispatchRequestHeaders = Type.Object({
+  authorization: Type.Optional(Type.String()),
+});
+
+export type JobDispatchRequestHeadersType = Static<typeof JobDispatchRequestHeaders>;
+
 export const JobDispatchRequest = Type.Object(
   {
     browser: Type.Enum(JobBrowser, { default: JobBrowser.CHROMIUM }),
@@ -71,6 +77,22 @@ export const SyncJob400Reply = Type.Object({
 
 export type SyncJob400ReplyType = Static<typeof SyncJob400Reply>;
 
+export const SyncJob401Reply = Type.Object({
+  statusCode: Type.Literal(401),
+  error: Type.String(),
+  message: Type.String(),
+});
+
+export type SyncJob401ReplyType = Static<typeof SyncJob401Reply>;
+
+export const SyncJob403Reply = Type.Object({
+  statusCode: Type.Literal(403),
+  error: Type.String(),
+  message: Type.String(),
+});
+
+export type SyncJob403ReplyType = Static<typeof SyncJob403Reply>;
+
 export const AsyncJob200Reply = Type.Object({
   status: Type.Literal("scheduled"),
   id: Type.Number({ minimum: 1 }),
@@ -85,6 +107,20 @@ export const AsyncJob400Reply = Type.Object({
 });
 
 export type AsyncJob400ReplyType = Static<typeof AsyncJob400Reply>;
+
+export const AsyncJob401Reply = Type.Object({
+  statusCode: Type.Literal(401),
+  error: Type.String(),
+  message: Type.String(),
+});
+
+export const AsyncJob403Reply = Type.Object({
+  statusCode: Type.Literal(403),
+  error: Type.String(),
+  message: Type.String(),
+});
+
+export type AsyncJob403ReplyType = Static<typeof AsyncJob403Reply>;
 
 export const AsyncJobStatusRequest = Type.Object({
   id: Type.Number({ minimum: 1 }),
@@ -105,6 +141,7 @@ export type AsyncJobStatus200ReplyType = Static<typeof AsyncJobStatus200Reply>;
 
 export const AsyncJobStatus404Reply = Type.Object({
   statusCode: Type.Literal(404),
+  message: Type.String(),
   error: Type.String(),
 });
 

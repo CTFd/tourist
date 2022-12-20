@@ -2,12 +2,11 @@ import anyTest, { TestFn } from "ava";
 import { FastifyInstance } from "fastify";
 
 import { createApp } from "../src/app";
-import { getConfig } from "../src/config";
 import { JobBrowser, JobOptions } from "../src/schemas/api";
 
 // @ts-ignore: tests directory is not under rootDir, because we're using ts-node for testing
 import { startTestApp } from "./utils/_app";
-import { base64regex, getFreePort } from "./utils/_common";
+import { base64regex, getFreePort, getTestConfig } from "./utils/_common";
 
 const test = anyTest as TestFn<{
   app: FastifyInstance;
@@ -16,7 +15,10 @@ const test = anyTest as TestFn<{
 }>;
 
 test.before(async (t) => {
-  const app = await createApp({ logger: false }, getConfig());
+  const app = await createApp(
+    { logger: false },
+    getTestConfig({ ENABLE_AUTHENTICATION: false }),
+  );
 
   const testAppPort = await getFreePort();
   const testApp = await startTestApp(

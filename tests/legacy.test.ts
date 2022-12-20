@@ -2,11 +2,11 @@ import { FastifyInstance } from "fastify";
 import anyTest, { TestFn } from "ava";
 
 import { createApp } from "../src/app";
-import { getConfig } from "../src/config";
 import { LegacySimpleVisitQueue } from "../src/queue";
 
 // @ts-ignore: tests directory is not under rootDir, because we're using ts-node for testing
 import { startTestApp } from "./utils/_app";
+import { getTestConfig } from "./utils/_common";
 
 const test = anyTest as TestFn<{
   app: FastifyInstance;
@@ -21,7 +21,7 @@ test.before(async (t) => {
 
   const app = await createApp(
     { logger: false },
-    getConfig({ ENABLE_LEGACY_API: true }),
+    getTestConfig({ ENABLE_LEGACY_API: true }),
   );
   const testApp = await startTestApp(
     { logger: false },

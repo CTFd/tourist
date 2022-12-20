@@ -1,6 +1,11 @@
 # Tourist
 
 
+### Note about authentication:
+
+Authentication with JWT tokens is enabled by default, however the legacy API does not perform authentication at all. 
+If you intend to use the authentication you should also disable the legacy API.
+
 ### Note about testing:
 
 Running the tests concurrently, with `yarn test` causes some false negatives. The CI workflow uses the `yarn test:ci`

@@ -50,20 +50,14 @@ const handleVisit = async (request: FastifyRequest, reply: FastifyReply) => {
     });
   }
 
-  for (const step of steps) {
-    if (step.actions) {
-      try {
-        validateActions(step.actions);
-      } catch (e: any) {
-        request.log.error(e.message);
-
-        return reply.status(400).send({
-          statusCode: 400,
-          error: "Bad Request",
-          message: e.message,
-        });
-      }
-    }
+  const validationResult = validateActions(steps);
+  if (validationResult !== true) {
+    // convert new validation result to legacy API format
+    return reply.status(400).send({
+      statusCode: 400,
+      error: "Bad Request",
+      message: validationResult.message,
+    });
   }
 
   for (const step of steps) {
