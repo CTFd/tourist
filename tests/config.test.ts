@@ -9,4 +9,5 @@ test("config has correct default values", async (t) => {
   t.is(config.PORT, 3000);
   t.is(config.ENABLE_LEGACY_API, false);
   t.is(config.ENABLE_AUTHENTICATION, true);
+  t.is(config.SENTRY_DSN, false);
 });
