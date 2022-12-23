@@ -24,6 +24,7 @@
     "@fastify/swagger": "^8.2.1",
     "@fastify/swagger-ui": "^1.3.0",
     "@fastify/type-provider-typebox": "^2.4.0",
+    "@immobiliarelabs/fastify-sentry": "^5.0.1",
     "@sinclair/typebox": "^0.25.10",
     "bull": "^4.10.2",
     "dotenv": "^16.0.3",

@@ -1,6 +1,7 @@
 import Fastify, { FastifyServerOptions } from "fastify";
 import { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
 
+import fastifySentry from "@immobiliarelabs/fastify-sentry";
 import fastifySwagger from "@fastify/swagger";
 import fastifySwaggerUI from "@fastify/swagger-ui";
 
@@ -15,6 +16,13 @@ export const createApp = async (
 ) => {
   const app = Fastify(options).withTypeProvider<TypeBoxTypeProvider>();
   app.decorate("config", config);
+
+  if (app.config.SENTRY_DSN) {
+    app.register(fastifySentry, {
+      dsn: app.config.SENTRY_DSN,
+      environment: app.config.ENV,
+    });
+  }
 
   app.register(fastifySwagger, SwaggerConfig);
   app.register(fastifySwaggerUI, {

@@ -12,6 +12,7 @@ export declare type TouristConfig = {
   PORT: number;
   ENABLE_LEGACY_API: boolean;
   ENABLE_AUTHENTICATION: boolean;
+  SENTRY_DSN: string | false;
 };
 
 if (process.env.NODE_ENV !== "test") {
@@ -26,4 +27,8 @@ export default {
   PORT: parseInt(process.env.PORT ? process.env.PORT : "3000"),
   ENABLE_LEGACY_API: parseBool(process.env.ENABLE_LEGACY_API, false),
   ENABLE_AUTHENTICATION: parseBool(process.env.ENABLE_AUTHENTICATION, true),
+  SENTRY_DSN:
+    process.env.SENTRY_DSN && process.env.SENTRY_DSN !== ""
+      ? process.env.SENTRY_DSN
+      : false,
 } as TouristConfig;
