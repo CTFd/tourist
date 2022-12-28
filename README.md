@@ -14,6 +14,7 @@ deploy a single instance of tourist somewhere and have all your challenges talk 
 It can also perform additional actions, for example if your challenge requires generating PDF files from HTML
 you can also outsource this task to tourist.
 
+
 ### Getting started
 
 1. First you need to deploy tourist. We recommend using our docker image, you can also reference the `docker-compose.yml` file.
@@ -25,6 +26,17 @@ For reference, be sure to check:
 - examples directory
 - OpenAPI docs (by navigating to a deployed tourist endpoint)
 - unit tests: `runner.test.ts`, `async-job.test.ts` and `sync-job.test.ts`
+
+
+### Configuring tourist
+
+We recommend using tourist in Docker, and configuring it with environmental variables. Example (default) config can be
+seen in the `.env.example` file which is self-explanatory.
+
+The only required setting is the `REDIS_URL`. It's also recommend to provide a securely random `SECRET` - tourist will
+generate a random secret key on startup, however if you happen to restart the application your old tokens will become
+invalid.
+
 
 ### Using actions
 
@@ -39,15 +51,6 @@ There are a few guidelines for you to follow:
 - Do not use waitForNavigation - tourist will automatically wait for the navigation to complete upon clicking buttons
 - Do not use screenshot / record in the actions - instead specify this in tourist options when dispatching the request
 
-
-### Configuring tourist
-
-We recommend using tourist in Docker, and configuring it with environmental variables. Example (default) config can be
-seen in the `.env.example` file which is self-explanatory.
-
-The only required setting is the `REDIS_URL`. It's also recommend to provide a securely random `SECRET` - tourist will
-generate a random secret key on startup, however if you happen to restart the application your old tokens will become
-invalid.
 
 #### Authentication
 
@@ -72,7 +75,18 @@ synchronous and asynchronous jobs. It's provided as a compatibility layer for us
 
 Tourist can capture exceptions to sentry, to enable that - configure the `SENTRY_DSN` env variable.
 
-### Note about testing:
+
+### Contributing
+
+Contributions are the most welcome!
+
+Please use GitHub issues to submit both issues and feature requests, and feel free to submit pull requests!
+
+When working with the codebase please adhere to the prettier code style, you can format your code with `yarn format`.
+
+When adding new functionality please make sure to cover it with unit tests as well!
+
+#### Note about testing:
 
 Running the tests concurrently, with `yarn test` causes some false negatives. The CI workflow uses the `yarn test:ci`
 command to run tests serially, which rarely causes false negatives, but can be a hassle during development.
