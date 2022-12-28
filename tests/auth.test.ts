@@ -73,7 +73,7 @@ test("POST '/api/v1/issue-token' issues token with default values", async (t) =>
       scope: "https://example.com",
     },
     headers: {
-      Authentication: `Bearer ${TEST_ISSUER_TOKEN}`,
+      Authorization: `Bearer ${TEST_ISSUER_TOKEN}`,
     },
   });
 
@@ -105,7 +105,7 @@ test("POST '/api/v1/issue-token' issues token with custom validity", async (t) =
       validity: 3600,
     },
     headers: {
-      Authentication: `Bearer ${TEST_ISSUER_TOKEN}`,
+      Authorization: `Bearer ${TEST_ISSUER_TOKEN}`,
     },
   });
 
@@ -137,7 +137,7 @@ test("POST '/api/v1/issue-token' issues token with strict attribute", async (t) 
       strict: true,
     },
     headers: {
-      Authentication: `Bearer ${TEST_ISSUER_TOKEN}`,
+      Authorization: `Bearer ${TEST_ISSUER_TOKEN}`,
     },
   });
 
@@ -155,7 +155,7 @@ test("POST '/api/v1/issue-token' issues token with strict attribute", async (t) 
   t.assert(payload.iat! >= stamp);
 });
 
-test("POST '/api/v1/issue-token' rejects requests without authentication", async (t) => {
+test("POST '/api/v1/issue-token' rejects requests without authorization", async (t) => {
   const { app } = t.context;
 
   const response = await app.inject({
@@ -171,11 +171,11 @@ test("POST '/api/v1/issue-token' rejects requests without authentication", async
   t.deepEqual(body, {
     statusCode: 400,
     error: "Bad Request",
-    message: "headers must have required property 'authentication'",
+    message: "headers must have required property 'authorization'",
   });
 });
 
-test("POST '/api/v1/issue-token' rejects requests with invalid authentication", async (t) => {
+test("POST '/api/v1/issue-token' rejects requests with invalid authorization", async (t) => {
   const { app } = t.context;
 
   const response = await app.inject({
@@ -186,7 +186,7 @@ test("POST '/api/v1/issue-token' rejects requests with invalid authentication", 
     },
     headers: {
       // correctly signed visit token - but not an issuer token
-      Authentication: `Bearer ${TEST_TOKEN}`,
+      Authorization: `Bearer ${TEST_TOKEN}`,
     },
   });
 

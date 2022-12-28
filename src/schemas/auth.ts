@@ -1,7 +1,7 @@
 import { Static, Type } from "@sinclair/typebox";
 
 export const IssueTokenRequestHeaders = Type.Object({
-  authentication: Type.String(),
+  authorization: Type.String(),
 });
 export type IssueTokenRequestHeadersType = Static<typeof IssueTokenRequestHeaders>;
 

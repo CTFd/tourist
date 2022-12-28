@@ -44,10 +44,10 @@ export default (
 
 const getIssueTokenHandler = (fastify: FastifyInstance) => {
   return async (request: FastifyRequest, reply: FastifyReply) => {
-    const { authentication } = <IssueTokenRequestHeadersType>request.headers;
+    const { authorization } = <IssueTokenRequestHeadersType>request.headers;
     const { validity, scope, strict } = <IssueTokenRequestType>request.body;
 
-    if (!authenticateIssuerToken(authentication, fastify.config.SECRET)) {
+    if (!authenticateIssuerToken(authorization, fastify.config.SECRET)) {
       return reply.status(401).send({
         statusCode: 401,
         error: "Invalid Issuer Token",
