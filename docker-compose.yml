@@ -2,7 +2,7 @@ version: '3'
 
 services:
   tourist:
-    build: .
+    image: ghcr.io/ctfd/tourist:latest
     ports:
       - '3000:3000'
     environment:
