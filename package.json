@@ -32,7 +32,7 @@
     "jsonwebtoken": "^9.0.0",
     "lodash": "^4.17.21",
     "playwright": "^1.28.1",
-    "vm2": "^3.9.11"
+    "vm2": "^3.9.13"
   },
   "devDependencies": {
     "@fastify/formbody": "^7.3.0",
