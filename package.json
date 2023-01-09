@@ -28,7 +28,7 @@
     "@sinclair/typebox": "^0.25.16",
     "bull": "^4.10.2",
     "dotenv": "^16.0.3",
-    "fastify": "^4.10.2",
+    "fastify": "^4.11.0",
     "jsonwebtoken": "^9.0.0",
     "lodash": "^4.17.21",
     "playwright": "^1.29.1",
