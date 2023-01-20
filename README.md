@@ -20,8 +20,59 @@ you can also outsource this task to Tourist.
   * We recommend using our docker image from `ghcr.io/ctfd/tourist`
   * You can also reference the `docker-compose.yml` file.
 2. With authentication enabled, you need to copy the issuer token generated for you during the application start up.
-3. Next, using that token, you need to create a token for your application to schedule jobs.
-4. In response to that request, you will receive a visit token (by default valid for 7 days), which you can use to schedule jobs.
+3. Next, using that token, you need to create a token for your application to schedule jobs:
+```python
+# Issue a non-strict, visit token for visiting example.com valid for 1 hour.
+import requests
+
+url = "http://localhost:3000/api/v1/issue-token"
+token = "<issuer-token>"
+
+headers = {
+  "Authorization": f"Bearer {token}"
+}
+
+data = {
+  "scope": "https://example.com",
+}
+
+response = requests.post(url, json=data, headers=headers)
+print(response.json()["token"])
+```
+
+4. In response to that request, you will receive a visit token (by default valid for 7 days), which you can use to schedule jobs:
+
+```python
+# Go to https://example.com and take a screenshot synchronously
+import base64
+import requests
+
+url = "http://localhost:3000/api/v1/sync-job"
+token = "<visit-token>"
+
+headers = {
+  "Authorization": f"Bearer {token}"
+}
+
+data = {
+  "steps": [
+    {"url": "https://example.com"}
+  ],
+  # You can create a video and a pdf the same way by using additional options: "RECORD" and "PDF"
+  "options": ["SCREENSHOT"]
+}
+
+response = requests.post(url, json=data, headers=headers).json()
+
+
+if response["status"] == "success":
+  screenshot_b64 = response["result"]["screenshot"]
+  screenshot = base64.b64decode(screenshot_b64)
+
+  with open("screenshot.png", "wb+") as screenshot_file:
+    screenshot_file.write(screenshot)
+```
+
 
 For reference, be sure to check:
 
