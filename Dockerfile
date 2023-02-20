@@ -4,6 +4,7 @@ COPY . .
 RUN yarn && yarn build
 
 FROM mcr.microsoft.com/playwright:v1.27.1-focal
+LABEL org.opencontainers.image.source="https://github.com/CTFd/Tourist"
 RUN adduser --uid 1001 --disabled-login tourist
 USER tourist
 
