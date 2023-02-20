@@ -3,7 +3,7 @@ import anyTest, { TestFn } from "ava";
 import { v4 as uuid4 } from "uuid";
 
 import { PlaywrightRunner } from "../src/utils/runner";
-import { JobBrowser } from "../src/schemas/api";
+import { CookieSameSite, JobBrowser } from "../src/schemas/api";
 
 // @ts-ignore: tests directory is not under rootDir, because we're using ts-node for testing
 import { startTestApp } from "./utils/_app";
@@ -67,6 +67,54 @@ test("PlaywrightRunner attaches cookies", async (t) => {
         httpOnly: false,
         secure: false,
       },
+    ],
+    options: [],
+  });
+
+  await runner.init();
+  await runner.exec();
+  await runner.finish();
+
+  const inspection = await testApp.inject({
+    method: "GET",
+    url: "/inspect-req",
+    query: {
+      id: testID,
+    },
+  });
+
+  const { headers } = inspection.json();
+  t.assert(headers.hasOwnProperty("cookie"));
+  t.is(headers.cookie, "test=test; test2=test2");
+});
+
+test("PlaywrightRunner attaches cookies with SameSite attribute", async (t) => {
+  const { testApp, testAppURL } = t.context;
+  const testID = uuid4();
+
+  const runner = new PlaywrightRunner({
+    browser: JobBrowser.CHROMIUM,
+    steps: [{ url: `${testAppURL}/record-req?id=${testID}` }],
+    cookies: [
+      {
+        name: "test",
+        value: "test",
+        domain: "localhost",
+        path: "/",
+        httpOnly: false,
+        secure: false,
+        sameSite: CookieSameSite.STRICT,
+      },
+      {
+        name: "test2",
+        value: "test2",
+        domain: "localhost",
+        path: "/",
+        httpOnly: false,
+        secure: false,
+        sameSite: CookieSameSite.LAX,
+      },
+      // not testing None as it'd require secure: true and an HTTPS enabled server
     ],
     options: [],
   });

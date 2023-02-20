@@ -10,6 +10,12 @@ export enum JobOptions {
   PDF = "PDF",
 }
 
+export enum CookieSameSite {
+  NONE = "None",
+  LAX = "Lax",
+  STRICT = "Strict",
+}
+
 export const JobStep = Type.Object(
   {
     url: Type.String(),
@@ -29,7 +35,7 @@ export const JobCookie = Type.Object(
     expires: Type.Optional(Type.Number()),
     httpOnly: Type.Boolean({ default: false }),
     secure: Type.Boolean({ default: false }),
-    // TODO: sameSite
+    sameSite: Type.Optional(Type.Enum(CookieSameSite)),
   },
   { additionalProperties: false },
 );
