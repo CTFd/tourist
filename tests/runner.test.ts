@@ -646,4 +646,79 @@ test("PlaywrightRunner runs actions in an isolated context", async (t) => {
   );
 });
 
-// TODO: Test accepts different browsers
+test("PlaywrightRunner closes the browser after completing the job", async (t) => {
+  const { testAppURL } = t.context;
+
+  const runner = new PlaywrightRunner({
+    browser: JobBrowser.CHROMIUM,
+    steps: [
+      {
+        url: `${testAppURL}/`,
+        actions: [
+          "page.waitForSelector('h1')",
+        ],
+      },
+    ],
+    cookies: [],
+    options: [],
+  });
+
+  await runner.init();
+  await runner.exec();
+  await runner.finish();
+
+  t.assert(runner.browser === undefined);
+});
+
+test("PlaywrightRunner closes the browser if an error occurs", async (t) => {
+  const { testAppURL } = t.context;
+
+  const runner_1 = new PlaywrightRunner({
+    browser: JobBrowser.CHROMIUM,
+    steps: [
+      {
+        url: `${testAppURL}/`,
+        actions: [
+          "page.on('invalid')",
+          "page.waitForSelector('h1')",
+        ],
+      },
+    ],
+    cookies: [],
+    options: [],
+  });
+
+  await t.throwsAsync(
+    async () => {
+      await runner_1.init();
+      await runner_1.exec();
+      await runner_1.finish();
+    },
+    { message: 'invalid action "page.on(\'invalid\')"' },
+  );
+
+  t.assert(runner_1.browser === undefined);
+
+  const runner_2 = new PlaywrightRunner({
+    browser: JobBrowser.CHROMIUM,
+    steps: [
+      {
+        url: `${testAppURL}/`,
+        actions: ["page.waitForSelector('nonexistent', {timeout: 1000})"],
+      },
+    ],
+    cookies: [],
+    options: [],
+  });
+
+  await t.throwsAsync(
+    async () => {
+      await runner_2.init();
+      await runner_2.exec();
+      await runner_2.finish();
+    },
+    { message: 'invalid action "page.waitForSelector(\'nonexistent\', {timeout: 1000})"' },
+  );
+
+  t.assert(runner_2.browser === undefined);
+});
