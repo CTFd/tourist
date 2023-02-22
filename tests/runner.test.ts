@@ -654,9 +654,7 @@ test("PlaywrightRunner closes the browser after completing the job", async (t) =
     steps: [
       {
         url: `${testAppURL}/`,
-        actions: [
-          "page.waitForSelector('h1')",
-        ],
+        actions: ["page.waitForSelector('h1')"],
       },
     ],
     cookies: [],
@@ -678,10 +676,7 @@ test("PlaywrightRunner closes the browser if an error occurs", async (t) => {
     steps: [
       {
         url: `${testAppURL}/`,
-        actions: [
-          "page.on('invalid')",
-          "page.waitForSelector('h1')",
-        ],
+        actions: ["page.on('invalid')", "page.waitForSelector('h1')"],
       },
     ],
     cookies: [],
@@ -694,7 +689,7 @@ test("PlaywrightRunner closes the browser if an error occurs", async (t) => {
       await runner_1.exec();
       await runner_1.finish();
     },
-    { message: 'invalid action "page.on(\'invalid\')"' },
+    { message: "invalid action \"page.on('invalid')\"" },
   );
 
   t.assert(runner_1.browser === undefined);
@@ -717,7 +712,10 @@ test("PlaywrightRunner closes the browser if an error occurs", async (t) => {
       await runner_2.exec();
       await runner_2.finish();
     },
-    { message: 'invalid action "page.waitForSelector(\'nonexistent\', {timeout: 1000})"' },
+    {
+      message:
+        "invalid action \"page.waitForSelector('nonexistent', {timeout: 1000})\"",
+    },
   );
 
   t.assert(runner_2.browser === undefined);
