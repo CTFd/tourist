@@ -104,6 +104,7 @@ export class PlaywrightRunner {
         try {
           await (async () => vm.run(preOpenAction))();
         } catch (e) {
+          await this.teardown();
           throw new Error(`invalid action "${preOpenAction}"`);
         }
       }
@@ -117,6 +118,7 @@ export class PlaywrightRunner {
           await (async () => vm.run(postOpenAction))();
           await this.page.waitForLoadState();
         } catch (e) {
+          await this.teardown();
           throw new Error(`invalid action "${postOpenAction}"`);
         }
       }
