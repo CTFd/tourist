@@ -5,6 +5,11 @@ RUN yarn && yarn build
 
 FROM mcr.microsoft.com/playwright:v1.27.1-focal
 LABEL org.opencontainers.image.source="https://github.com/CTFd/Tourist"
+
+RUN apt update && \
+    apt install -y tini && \
+    rm -rf /var/lib/apt/lists/*
+
 RUN adduser --uid 1001 --disabled-login tourist
 USER tourist
 
@@ -17,4 +22,5 @@ ENV NODE_ENV=production \
     PORT=3000
 
 RUN yarn --production
+ENTRYPOINT ["/usr/bin/tini", "--"]
 CMD ["yarn", "start:serve"]
