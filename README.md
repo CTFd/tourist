@@ -1,6 +1,7 @@
 # Tourist
 
-![build](https://github.com/ctfd/tourist/actions/workflows/docker.yml/badge.svg)
+![release](https://github.com/ctfd/tourist/actions/workflows/docker-release.yml/badge.svg)
+![next](https://github.com/ctfd/tourist/actions/workflows/docker-next.yml/badge.svg)
 ![test](https://github.com/ctfd/tourist/actions/workflows/test.yml/badge.svg)
 
 ## What is Tourist?
