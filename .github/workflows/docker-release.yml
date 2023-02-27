@@ -1,10 +1,10 @@
-name: Build Docker
+name: Build Docker Release
 on:
   release:
     types: [published]
 
 jobs:
-  build-and-push-docker:
+  build-and-push-docker-release:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
