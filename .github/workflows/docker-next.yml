@@ -21,7 +21,7 @@ jobs:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.CR_PAT }}
-      - name: Build and push latest
+      - name: Build and push next
         uses: docker/build-push-action@v3
         with:
           push: true
