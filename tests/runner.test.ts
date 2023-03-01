@@ -323,7 +323,7 @@ test("PlaywrightRunner actions can use output from the context (reduce-promise)"
           "page.locator('a').all()",
           `context[0].reduce(
             (previous, link) => previous.then(
-              () => link.click({ button: "middle"}).then(null)
+              () => link.click({ button: "middle" }).then(null)
             ),
             Promise.resolve(null)
           );`,
