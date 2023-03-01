@@ -13,7 +13,7 @@ import {
   LegacyVisit200Reply,
   LegacyVisit400Reply,
 } from "../schemas/legacy";
-import { validateActions } from "../utils/validation";
+import { validateLegacyActions } from "../utils/legacy/validation";
 import { camelizeLegacyActions } from "../utils/legacy/actions";
 import { legacyReturningVisitJob } from "../jobs/legacy";
 import { LegacySimpleVisitQueue } from "../queue";
@@ -50,7 +50,7 @@ const handleVisit = async (request: FastifyRequest, reply: FastifyReply) => {
     });
   }
 
-  const validationResult = validateActions(steps);
+  const validationResult = validateLegacyActions(steps);
   if (validationResult !== true) {
     // convert new validation result to legacy API format
     return reply.status(400).send({

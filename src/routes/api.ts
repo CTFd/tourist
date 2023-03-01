@@ -34,7 +34,6 @@ import {
 } from "../schemas/api";
 import { AsyncVisitQueue } from "../queue";
 import { syncVisitJob, VisitJobData } from "../jobs/api";
-import { validateActions } from "../utils/validation";
 import { authenticateVisitToken } from "../utils/auth";
 
 export default (
@@ -161,11 +160,6 @@ const getAsyncJobHandler = (fastify: FastifyInstance) => {
       }
     }
 
-    const validationResult = validateActions(data.steps);
-    if (validationResult !== true) {
-      return reply.status(validationResult.statusCode).send(validationResult);
-    }
-
     const job = await AsyncVisitQueue.add(data);
     return reply.send({ status: "scheduled", id: job.id });
   };
@@ -183,11 +177,6 @@ const getSyncJobHandler = (fastify: FastifyInstance) => {
       if (authenticationResult !== true) {
         return reply.status(authenticationResult.statusCode).send(authenticationResult);
       }
-    }
-
-    const validationResult = validateActions(data.steps);
-    if (validationResult !== true) {
-      return reply.status(validationResult.statusCode).send(validationResult);
     }
 
     const jobResult = await syncVisitJob(data);

@@ -1,9 +1,9 @@
 import _ from "lodash";
-import { JobStepType } from "../schemas/api";
+import { JobStepType } from "../../schemas/api";
 
 // perform basic preliminary validation of the payload to maximize the chances of it running
 // it is not a security mechanism, security is handled by the context isolation
-export const validateActions = (steps: JobStepType[]) => {
+export const validateLegacyActions = (steps: JobStepType[]) => {
   // create a flat array of actions from all the steps
   const actions = _.reduce(
     steps,

@@ -3,7 +3,7 @@ import fs from "fs";
 
 import _ from "lodash";
 import { VM } from "vm2";
-import playwright, { Browser, BrowserContext, Page } from "playwright";
+import playwright, { Browser, BrowserContext, LaunchOptions, Page } from "playwright";
 
 import {
   JobBrowser,
@@ -30,24 +30,33 @@ export class PlaywrightRunner {
   public readonly steps: JobStepType[];
   public readonly cookies: JobCookieType[];
   public options: JobOptions[] = [];
+  private _actionContext: Array<any> = [];
+  private readonly _debug: boolean;
 
-  constructor(data: PlaywrightRunnerData) {
+  constructor(data: PlaywrightRunnerData, debug: boolean = false) {
     this.browserKind = data.browser;
     this.steps = data.steps;
     this.cookies = data.cookies;
     this.options = data.options;
+    this._debug = debug;
   }
 
   // init() initializes playwright: browser, context and page
   // it is intentionally separated from exec to allow for modifying playwright
   public async init() {
+    const launchOptions: LaunchOptions = {};
+    if (this._debug) {
+      launchOptions.slowMo = 1000;
+      launchOptions.headless = false;
+    }
+
     switch (this.browserKind) {
       case JobBrowser.CHROMIUM:
-        this.browser = await playwright.chromium.launch();
+        this.browser = await playwright.chromium.launch(launchOptions);
         break;
 
       case JobBrowser.FIREFOX:
-        this.browser = await playwright.firefox.launch();
+        this.browser = await playwright.firefox.launch(launchOptions);
         break;
     }
 
@@ -90,22 +99,29 @@ export class PlaywrightRunner {
       }
 
       // provide the page object to the isolated context
-      const { page } = this;
       const vm = new VM({
         eval: false,
         wasm: false,
-        sandbox: {
-          page,
-        },
       });
 
+      const { page, _actionContext } = this;
+      vm.freeze(page, "page");
+      vm.freeze(_actionContext, "context");
+
+      if (this._debug) {
+        vm.freeze(console, "console");
+      }
+
       // run all pre-open actions for this step
-      for (const preOpenAction of actions.preOpen) {
-        try {
-          await (async () => vm.run(preOpenAction))();
-        } catch (e) {
-          await this.teardown();
-          throw new Error(`invalid action "${preOpenAction}"`);
+      if (step.actions && actions.preOpen) {
+        for (const preOpenAction of actions.preOpen) {
+          try {
+            const idx = step.actions.indexOf(preOpenAction);
+            this._actionContext[idx] = await vm.run(preOpenAction);
+          } catch (e) {
+            await this.teardown();
+            throw new Error(`[runtime] invalid action "${preOpenAction}"`);
+          }
         }
       }
 
@@ -113,13 +129,16 @@ export class PlaywrightRunner {
       await this.page.waitForLoadState();
 
       // run all post-open actions for this step
-      for (const postOpenAction of actions.postOpen) {
-        try {
-          await (async () => vm.run(postOpenAction))();
-          await this.page.waitForLoadState();
-        } catch (e) {
-          await this.teardown();
-          throw new Error(`invalid action "${postOpenAction}"`);
+      if (step.actions && actions.postOpen) {
+        for (const postOpenAction of actions.postOpen) {
+          try {
+            const idx = step.actions.indexOf(postOpenAction);
+            this._actionContext[idx] = await vm.run(postOpenAction);
+            await this.page.waitForLoadState();
+          } catch (e) {
+            await this.teardown();
+            throw new Error(`[runtime] invalid action "${postOpenAction}"`);
+          }
         }
       }
     }
@@ -164,6 +183,8 @@ export class PlaywrightRunner {
 
   // teardown() removes the browser and context from the instance as well as closes them
   public async teardown() {
+    this._actionContext = [];
+
     if (this.context) {
       await this.context.close();
       delete this.context;
@@ -175,5 +196,10 @@ export class PlaywrightRunner {
       delete this.browser;
       this.browser = undefined;
     }
+  }
+
+  // helper getter for the private _actionContext for peeking at the context during tests
+  get actionContext() {
+    return this._actionContext;
   }
 }

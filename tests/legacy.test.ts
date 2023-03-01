@@ -218,23 +218,22 @@ test("POST '/visit' rejects cookies with invalid secure property", async (t) => 
   });
 });
 
-// TODO: sameSite is currently excluded as it breaks cookies (schemas/legacy.ts)
-//test("POST '/visit' rejects cookies with invalid sameSite property", async t => {
-//  const { app, testAppURL } = t.context;
-//
-//  const response = await app.inject({
-//    method: "POST",
-//    url: "/visit",
-//    payload: {
-//      steps: [{ url: testAppURL }],
-//      cookies: [{ name: "test", value: "test", domain: "test", sameSite: "test" }],
-//    },
-//  });
-//
-//  t.is(response.statusCode, 400);
-//});
+test("POST '/visit' rejects cookies with invalid sameSite property", async (t) => {
+  const { app, testAppURL } = t.context;
 
-test("POST '/visit' rejects invalid actions", async (t) => {
+  const response = await app.inject({
+    method: "POST",
+    url: "/visit",
+    payload: {
+      steps: [{ url: testAppURL }],
+      cookies: [{ name: "test", value: "test", domain: "test", sameSite: "test" }],
+    },
+  });
+
+  t.is(response.statusCode, 400);
+});
+
+test("POST '/visit' rejects invalid preOpen actions", async (t) => {
   const { app, testAppURL } = t.context;
 
   const response_1 = await app.inject({

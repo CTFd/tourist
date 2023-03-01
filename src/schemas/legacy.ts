@@ -1,5 +1,7 @@
 import { Static, Type } from "@sinclair/typebox";
 
+import { CookieSameSite } from "./api";
+
 export const LegacyStep = Type.Object({
   url: Type.String(),
   actions: Type.Optional(Type.Array(Type.String())),
@@ -16,12 +18,7 @@ export const LegacyCookie = Type.Object(
     expires: Type.Optional(Type.Number()),
     httpOnly: Type.Boolean({ default: false }),
     secure: Type.Boolean({ default: false }),
-
-    // TODO: This doesn't appear to work, cookies will not get attached if sameSite is present
-    //  sameSite: Type.Union(
-    //    [Type.Literal("Strict"), Type.Literal("Lax"), Type.Literal("None")],
-    //    { default: "None" },
-    //  ),
+    sameSite: Type.Optional(Type.Enum(CookieSameSite)),
   },
   { additionalProperties: false },
 );
