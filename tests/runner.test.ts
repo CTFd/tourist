@@ -268,6 +268,288 @@ test("PlaywrightRunner steps can interact with anchors", async (t) => {
   t.is(headers.referer, `${testAppURL}/anchor?id=${testID}`);
 });
 
+test("PlaywrightRunner actions can use output from the context (for-async)", async (t) => {
+  const { testApp, testAppURL } = t.context;
+  const testID = uuid4();
+
+  const runner = new PlaywrightRunner({
+    browser: JobBrowser.CHROMIUM,
+    steps: [
+      {
+        url: `${testAppURL}/multiple-anchors?id=${testID}`,
+        actions: [
+          "page.locator('a').all()",
+          `(async () => {
+            for (const link of context[0]) {
+              await link.click({ button: "middle" });
+            }
+          })()`,
+        ],
+      },
+    ],
+    cookies: [],
+    options: [],
+  });
+
+  await runner.init();
+  await runner.exec();
+  await runner.finish();
+
+  for (let i = 1; i <= 3; i++) {
+    const inspection = await testApp.inject({
+      method: "GET",
+      url: "/inspect-req",
+      query: {
+        id: `${testID}-${i}`,
+      },
+    });
+
+    const { headers } = inspection.json();
+    t.assert(headers.hasOwnProperty("referer"));
+    t.is(headers.referer, `${testAppURL}/multiple-anchors?id=${testID}`);
+  }
+});
+
+test("PlaywrightRunner actions can use output from the context (reduce-promise)", async (t) => {
+  const { testApp, testAppURL } = t.context;
+  const testID = uuid4();
+
+  const runner = new PlaywrightRunner({
+    browser: JobBrowser.CHROMIUM,
+    steps: [
+      {
+        url: `${testAppURL}/multiple-anchors?id=${testID}`,
+        actions: [
+          "page.locator('a').all()",
+          `context[0].reduce(
+            (previous, link) => previous.then(
+              () => link.click({ button: "middle" }).then(null)
+            ),
+            Promise.resolve(null)
+          );`,
+        ],
+      },
+    ],
+    cookies: [],
+    options: [],
+  });
+
+  await runner.init();
+  await runner.exec();
+  await runner.finish();
+
+  for (let i = 1; i <= 3; i++) {
+    const inspection = await testApp.inject({
+      method: "GET",
+      url: "/inspect-req",
+      query: {
+        id: `${testID}-${i}`,
+      },
+    });
+
+    const { headers } = inspection.json();
+    t.assert(headers.hasOwnProperty("referer"));
+    t.is(headers.referer, `${testAppURL}/multiple-anchors?id=${testID}`);
+  }
+});
+
+test("PlaywrightRunner actions can use output from the context (reduce-async)", async (t) => {
+  const { testApp, testAppURL } = t.context;
+  const testID = uuid4();
+
+  const runner = new PlaywrightRunner({
+    browser: JobBrowser.CHROMIUM,
+    steps: [
+      {
+        url: `${testAppURL}/multiple-anchors?id=${testID}`,
+        actions: [
+          "page.locator('a').all()",
+          `context[0].reduce(
+             async (previous, link) => {
+               await previous;
+               await link.click({ button: "middle" });
+             },
+             Promise.resolve(null)
+           );`,
+        ],
+      },
+    ],
+    cookies: [],
+    options: [],
+  });
+
+  await runner.init();
+  await runner.exec();
+  await runner.finish();
+
+  for (let i = 1; i <= 3; i++) {
+    const inspection = await testApp.inject({
+      method: "GET",
+      url: "/inspect-req",
+      query: {
+        id: `${testID}-${i}`,
+      },
+    });
+
+    const { headers } = inspection.json();
+    t.assert(headers.hasOwnProperty("referer"));
+    t.is(headers.referer, `${testAppURL}/multiple-anchors?id=${testID}`);
+  }
+});
+
+test("PlaywrightRunner assigns correct index to output values in the context", async (t) => {
+  const { testApp, testAppURL } = t.context;
+  const testID = uuid4();
+
+  const runner = new PlaywrightRunner({
+    browser: JobBrowser.CHROMIUM,
+    steps: [
+      {
+        url: `${testAppURL}/anchor?id=${testID}`,
+        actions: [
+          // output should still be available under context[0]
+          // even though page.on will be moved before that
+          "page.locator('a').all()",
+          "page.on('dialog', dialog => dialog.accept())",
+          `(async () => {
+            for (const link of context[0]) {
+              await link.click({ button: "middle" });
+            }
+          })()`,
+        ],
+      },
+    ],
+    cookies: [],
+    options: [],
+  });
+
+  await runner.init();
+  await runner.exec();
+  await runner.finish();
+
+  const inspection = await testApp.inject({
+    method: "GET",
+    url: "/inspect-req",
+    query: {
+      id: `${testID}`,
+    },
+  });
+
+  const { headers } = inspection.json();
+  t.assert(headers.hasOwnProperty("referer"));
+  t.is(headers.referer, `${testAppURL}/anchor?id=${testID}`);
+});
+
+test("PlaywrightRunner actions cannot generate code from strings", async (t) => {
+  const { testAppURL } = t.context;
+  const testID = uuid4();
+
+  const runner_1 = new PlaywrightRunner({
+    browser: JobBrowser.CHROMIUM,
+    steps: [
+      {
+        url: `${testAppURL}/anchor?id=${testID}`,
+        actions: ["new Function('return (1+2)')()"],
+      },
+    ],
+    cookies: [],
+    options: [],
+  });
+
+  await t.throwsAsync(
+    async () => {
+      await runner_1.init();
+      await runner_1.exec();
+      // code generation should not trigger, and the step should not complete
+      // so the expected value here is undefined (no assignment has been made)
+      t.assert(typeof runner_1.actionContext[0] === "undefined");
+      await runner_1.finish();
+    },
+    { message: `[runtime] invalid action "new Function('return (1+2)')()"` },
+  );
+
+  const runner_2 = new PlaywrightRunner({
+    browser: JobBrowser.CHROMIUM,
+    steps: [
+      {
+        url: `${testAppURL}/anchor?id=${testID}`,
+        actions: [
+          `(async () => {
+            return new Function('return (1+2)')();
+          })()`,
+        ],
+      },
+    ],
+    cookies: [],
+    options: [],
+  });
+
+  await t.throwsAsync(
+    async () => {
+      await runner_2.init();
+      await runner_2.exec();
+      // code generation should not trigger, and the step should not complete
+      // so the expected value here is undefined (no assignment has been made)
+      t.assert(typeof runner_2.actionContext[0] === "undefined");
+      await runner_2.finish();
+    },
+    {
+      message: (message) => {
+        return (
+          message.replace(/\s/g, "") ===
+          `[runtime] invalid action "(async () => {
+              return new Function('return (1+2)')();
+          })()"`.replace(/\s/g, "")
+        );
+      },
+    },
+  );
+});
+
+test("PlaywrightRunner actions cannot assign properties to frozen objects", async (t) => {
+  const { testAppURL } = t.context;
+  const testID = uuid4();
+
+  const runner_1 = new PlaywrightRunner({
+    browser: JobBrowser.CHROMIUM,
+    steps: [
+      {
+        url: `${testAppURL}/anchor?id=${testID}`,
+        actions: ["page.test = 'test'"],
+      },
+    ],
+    cookies: [],
+    options: [],
+  });
+
+  await runner_1.init();
+  await runner_1.exec();
+  t.false(runner_1.page!.hasOwnProperty("test"));
+  await runner_1.finish();
+
+  const runner_2 = new PlaywrightRunner({
+    browser: JobBrowser.CHROMIUM,
+    steps: [
+      {
+        url: `${testAppURL}/anchor?id=${testID}`,
+        actions: ["context[1337] = 'test1337'"],
+      },
+    ],
+    cookies: [],
+    options: [],
+  });
+
+  await runner_2.init();
+  await runner_2.exec();
+  // assignment to an array will return the assigned value, so it's expected for this
+  // value to be at index 0, and that the value at index 1337 wasn't assigned
+  // the point of this test is not to ensure that dangerous values can't be returned
+  // (covered by the test above), only that values at arbitrary indexes can't be assigned
+  t.assert(runner_2.actionContext.indexOf("test1337") == 0);
+  t.assert(runner_2.actionContext.indexOf("test1337") != 1337);
+  await runner_2.finish();
+});
+
 test("PlaywrightRunner steps can interact with buttons", async (t) => {
   const { testApp, testAppURL } = t.context;
   const testID = uuid4();
@@ -573,7 +855,7 @@ test("PlaywrightRunner runs actions in an isolated context", async (t) => {
       await runner_1.exec();
       await runner_1.finish();
     },
-    { message: 'invalid action "process.exit()"' },
+    { message: '[runtime] invalid action "process.exit()"' },
   );
 
   const runner_2 = new PlaywrightRunner({
@@ -594,7 +876,7 @@ test("PlaywrightRunner runs actions in an isolated context", async (t) => {
       await runner_2.exec();
       await runner_2.finish();
     },
-    { message: `invalid action "require('child_process').execSync('id')"` },
+    { message: `[runtime] invalid action "require('child_process').execSync('id')"` },
   );
 
   const runner_3 = new PlaywrightRunner({
@@ -618,7 +900,7 @@ test("PlaywrightRunner runs actions in an isolated context", async (t) => {
       await runner_3.finish();
     },
     {
-      message: `invalid action "process.mainModule.require('child_process').execSync('id').toString()"`,
+      message: `[runtime] invalid action "process.mainModule.require('child_process').execSync('id').toString()"`,
     },
   );
 
@@ -641,7 +923,7 @@ test("PlaywrightRunner runs actions in an isolated context", async (t) => {
       await runner_4.finish();
     },
     {
-      message: `invalid action "this.constructor.constructor('return process')().exit()"`,
+      message: `[runtime] invalid action "this.constructor.constructor('return process')().exit()"`,
     },
   );
 });
@@ -689,7 +971,7 @@ test("PlaywrightRunner closes the browser if an error occurs", async (t) => {
       await runner_1.exec();
       await runner_1.finish();
     },
-    { message: "invalid action \"page.on('invalid')\"" },
+    { message: `[runtime] invalid action "page.on('invalid')"` },
   );
 
   t.assert(runner_1.browser === undefined);
@@ -713,8 +995,7 @@ test("PlaywrightRunner closes the browser if an error occurs", async (t) => {
       await runner_2.finish();
     },
     {
-      message:
-        "invalid action \"page.waitForSelector('nonexistent', {timeout: 1000})\"",
+      message: `[runtime] invalid action "page.waitForSelector('nonexistent', {timeout: 1000})"`,
     },
   );
 

@@ -1,5 +1,5 @@
-import * as fs from "fs";
-import * as path from "path";
+import fs from "fs";
+import path from "path";
 
 import { FastifyRegisterOptions } from "fastify";
 import { FastifyDynamicSwaggerOptions } from "@fastify/swagger";
@@ -14,10 +14,5 @@ export const SwaggerConfig: FastifyRegisterOptions<FastifyDynamicSwaggerOptions>
       description: PKG.description,
       version: PKG.version,
     },
-    servers: [
-      {
-        url: "http://localhost:3000",
-      },
-    ],
   },
 };

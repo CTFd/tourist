@@ -239,25 +239,6 @@ test("POST '/api/v1/async-job' accepts cookies without path", async (t) => {
   t.assert(typeof data.id === "number");
 });
 
-test("POST '/api/v1/async-job' validates actions", async (t) => {
-  const { app, testAppURL } = t.context;
-
-  const response = await app.inject({
-    method: "POST",
-    url: "/api/v1/async-job",
-    payload: {
-      steps: [{ url: testAppURL, actions: ["pge.click('#test')"] }],
-    },
-  });
-
-  t.is(response.statusCode, 400);
-  t.deepEqual(response.json(), {
-    statusCode: 400,
-    error: "Action validation failed",
-    message: `invalid action "pge.click('#test')" - does not start with "page."`,
-  });
-});
-
 test("POST '/api/v1/async-job' rejects cookies with invalid httpOnly property", async (t) => {
   const { app, testAppURL } = t.context;
 
@@ -298,52 +279,6 @@ test("POST '/api/v1/async-job' rejects cookies with invalid secure property", as
   });
 });
 
-test("POST '/api/v1/async-job' rejects invalid actions", async (t) => {
-  const { app, testAppURL } = t.context;
-
-  const response_1 = await app.inject({
-    method: "POST",
-    url: "/api/v1/async-job",
-    payload: {
-      steps: [
-        {
-          url: `${testAppURL}/`,
-          // missing final )
-          actions: ["page.on('dialog'"],
-        },
-      ],
-    },
-  });
-
-  t.is(response_1.statusCode, 400);
-  t.deepEqual(response_1.json(), {
-    statusCode: 400,
-    error: "Action validation failed",
-    message: `invalid action "page.on('dialog'" - does not end with ")" or ");"`,
-  });
-
-  const response_2 = await app.inject({
-    method: "POST",
-    url: "/api/v1/async-job",
-    payload: {
-      steps: [
-        {
-          url: `${testAppURL}/`,
-          // does not start with page
-          actions: ["sheesh"],
-        },
-      ],
-    },
-  });
-
-  t.is(response_2.statusCode, 400);
-  t.deepEqual(response_2.json(), {
-    statusCode: 400,
-    error: "Action validation failed",
-    message: `invalid action "sheesh" - does not start with "page."`,
-  });
-});
-
 test.serial("POST '/api/v1/async-job' accepts chromium browser", async (t) => {
   const { app, testAppURL } = t.context;
 
@@ -372,6 +307,7 @@ test.serial("POST '/api/v1/async-job' accepts chromium browser", async (t) => {
   t.assert(result.result.hasOwnProperty("screenshot"));
   t.is(base64regex.test(result.result.screenshot), true);
 });
+
 test.serial("POST '/api/v1/async-job' accepts firefox browser", async (t) => {
   const { app, testAppURL } = t.context;
 

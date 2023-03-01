@@ -76,6 +76,15 @@ export const startTestApp = async (
       .send(`<a href="/record-req?id=${id}" id="click">Click Me!</a>`);
   });
 
+  app.get("/multiple-anchors", (request: RecordingRequest, reply) => {
+    const { id } = request.query;
+    reply.type("text/html").send(`
+          <a href="/record-req?id=${id}-1" id="click-1">Click Me!</a><br>
+          <a href="/record-req?id=${id}-2" id="click-2">Click Me!</a><br>
+          <a href="/record-req?id=${id}-3" id="click-3">Click Me!</a>
+      `);
+  });
+
   // testing buttons
   app.get("/button", (request: RecordingRequest, reply) => {
     const { id } = request.query;
