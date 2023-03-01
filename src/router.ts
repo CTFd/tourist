@@ -11,7 +11,7 @@ export const createRouter =
     options: FastifyPluginOptions,
     done: (err?: Error | undefined) => void,
   ) => {
-    fastify.get("/", (request, reply) => {
+    fastify.get("/", { schema: { hide: true } }, (request, reply) => {
       reply.redirect("/docs");
     });
 
