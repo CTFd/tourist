@@ -35,7 +35,7 @@
     "fastify": "^4.10.2",
     "jsonwebtoken": "^9.0.0",
     "lodash": "^4.17.21",
-    "playwright": "^1.29.1",
+    "playwright": "^1.31.1",
     "vm2": "^3.9.13"
   },
   "devDependencies": {
