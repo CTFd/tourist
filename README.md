@@ -1,6 +1,5 @@
 # Tourist
 
-![release](https://github.com/ctfd/tourist/actions/workflows/docker-release.yml/badge.svg)
 ![next](https://github.com/ctfd/tourist/actions/workflows/docker-next.yml/badge.svg)
 ![test](https://github.com/ctfd/tourist/actions/workflows/test.yml/badge.svg)
 
@@ -17,102 +16,113 @@ you can also outsource this task to Tourist.
 
 ## Getting Started
 
-1. First you need to deploy Tourist. 
-  * We recommend using our docker image from `ghcr.io/ctfd/tourist`
-  * You can also reference the `docker-compose.yml` file.
+1. First you need to deploy Tourist.
+   * We recommend using our docker image from `ghcr.io/ctfd/tourist`
+   * You can also reference the `docker-compose.yml` file
 2. With authentication enabled, you need to copy the issuer token generated for you during the application start up.
 3. Next, using that token, you need to create a token for your application to schedule jobs:
-```python
-# Issue a non-strict, visit token for visiting example.com valid for 1 hour.
-import requests
 
-url = "http://localhost:3000/api/v1/issue-token"
-token = "<issuer-token>"
+    ```python
+    # Issue a non-strict, visit token for visiting example.com valid for 7 days.
+    import requests
+    
+    url = "http://localhost:3000/api/v1/issue-token"
+    token = "<issuer-token>"
+    
+    headers = {
+      "Authorization": f"Bearer {token}"
+    }
+    
+    data = {
+      "scope": "https://example.com",
+    }
+    
+    response = requests.post(url, json=data, headers=headers)
+    print(response.json()["token"])
+    ```
 
-headers = {
-  "Authorization": f"Bearer {token}"
-}
+4. In response to that request, you will receive a visit token (by default valid for 7 days), which you can use to
+   schedule jobs:
 
-data = {
-  "scope": "https://example.com",
-}
+    ```python
+    # Go to https://example.com and take a screenshot synchronously
+    import base64
+    import requests
+    
+    url = "http://localhost:3000/api/v1/sync-job"
+    token = "<visit-token>"
+    
+    headers = {
+      "Authorization": f"Bearer {token}"
+    }
+    
+    data = {
+      "steps": [
+        {"url": "https://example.com"}
+      ],
+      # You can create a video and a pdf the same way by using additional options: "RECORD" and "PDF"
+      "options": ["SCREENSHOT"]
+    }
+    
+    response = requests.post(url, json=data, headers=headers).json()
 
-response = requests.post(url, json=data, headers=headers)
-print(response.json()["token"])
-```
+    if response["status"] == "success":
+      screenshot_b64 = response["result"]["screenshot"]
+      screenshot = base64.b64decode(screenshot_b64)
+    
+      with open("screenshot.png", "wb+") as screenshot_file:
+        screenshot_file.write(screenshot)
+    ```
 
-4. In response to that request, you will receive a visit token (by default valid for 7 days), which you can use to schedule jobs:
+For additional guidance, be sure to check:
 
-```python
-# Go to https://example.com and take a screenshot synchronously
-import base64
-import requests
-
-url = "http://localhost:3000/api/v1/sync-job"
-token = "<visit-token>"
-
-headers = {
-  "Authorization": f"Bearer {token}"
-}
-
-data = {
-  "steps": [
-    {"url": "https://example.com"}
-  ],
-  # You can create a video and a pdf the same way by using additional options: "RECORD" and "PDF"
-  "options": ["SCREENSHOT"]
-}
-
-response = requests.post(url, json=data, headers=headers).json()
-
-
-if response["status"] == "success":
-  screenshot_b64 = response["result"]["screenshot"]
-  screenshot = base64.b64decode(screenshot_b64)
-
-  with open("screenshot.png", "wb+") as screenshot_file:
-    screenshot_file.write(screenshot)
-```
-
-
-For reference, be sure to check:
-
-- The [examples directory](https://github.com/CTFd/tourist/tree/main/examples)
-- OpenAPI docs (by navigating to a deployed tourist endpoint)
-- Unit tests: `runner.test.ts`, `async-job.test.ts` and `sync-job.test.ts`
+* The [docs](./docs)
+* The [examples directory](./docs/examples)
+* OpenAPI docs (by navigating to a deployed Tourist endpoint)
+* Unit tests: [`runner.test.ts`](./tests/runner.test.ts), [`async-job.test.ts`](./tests/async-job.test.ts) and
+  [`sync-job.test.ts`](./tests/sync-job.test.ts)
 
 ## Configuring Tourist
 
-We recommend using tourist in Docker, and configuring it with environmental variables. Example (default) config can be
+We recommend using Tourist in Docker, and configuring it with environmental variables. Example (default) config can be
 seen in the `.env.example` file which is self-explanatory.
 
-The only required setting is the `REDIS_URL`. It's also recommend to provide a securely random `SECRET` - tourist will
+The only required setting is the `REDIS_URL`. It's also recommend to provide a securely random `SECRET` - Tourist will
 generate a random secret key on startup, however if you happen to restart the application your old tokens will become
 invalid.
 
-## Using actions
-
-You can specify actions to be performed during each step. Actions are an array of strings to be passed to playwright.
-There are a few guidelines for you to follow:
-
-- Each action has to reference the `page` variable - you can execute methods off of it, for the full list please reference the [playwright docs](https://playwright.dev/docs/api/class-page)
-- Use camelCased methods - as in the playwright docs.
-- Use JavaScript syntax - TypeScript will not be precompiled.
-- You can register event handlers by using `page.on()` - make sure to treat each action as a single line of code, use arrow functions and if necessary chain lines with semicolons.
-- Do not use `async`/`await` - Tourist will automatically wait for each step to complete
-- Do not use `waitForNavigation` - Tourist will automatically wait for the navigation to complete upon clicking buttons
-- Do not use `screenshot`/`record` in actions - instead specify this in tourist options when dispatching the request
+For full reference please check our guide on [installing Tourist](./docs/01-installing-tourist.md#configuration-reference)
 
 ### Authentication
 
-Token authentication is enabled by default. It can be disabled with env variables. Tourist expects the `Authorization` header with a value of `Bearer <token>`.
+Token authentication is enabled by default. It can be disabled with environmental variables.
 
-- Issuer / Master token - is provided for you when you start the application. You can use this token to issue visit tokens that will allow scheduling jobs.
-  - You can also generate a new issuer token at any time with `yarn cmd:get-issuer-token`.
-- Visit token - is obtained by making an authenticated (with issuer token) POST request to `/api/v1/issue-token`, where you can set:
-  - `scope` - (string) the URL against which the token will be valid. For example if you issue a token that allows tourist to visit `example.com` it will not allow for scheduling jobs against `google.com`.
-  - `validity` - (number) time in seconds, for how long the token should be valid (by default: 168h / 7days).
-  - `strict` - (boolean) whether the scope should be strictly equal to the visited url. For example a non-strict token will allow visiting all paths on `example.com`, but a strict token has to be strictly equal - including the scheme, path, and query parameters (by default: false).
+Tourist expects the `Authorization` header with a value of `Bearer <token>`.
+
+For full reference please check our guide on [Tourist authentication](./docs/02-authentication.md)
+
+## Using actions
+
+You can specify actions to be performed during each step. Actions are an array of strings (code) to be passed to
+playwright inside an isolated sandbox. There are a few guidelines for you to follow:
+
+* You will want to execute methods off of the provided `page` variable - which will be a playwright
+  [`Page`](https://playwright.dev/docs/api/class-page) object - already after navigation to the specified url.
+  * You can register event handlers by using [`page.on()`](https://playwright.dev/docs/api/class-page#events) -
+    which will be registered before the page loads.
+  * Use camelCased methods - as in the playwright docs.
+  * Use JavaScript syntax - TypeScript will not be precompiled.
+  * Do not use `screenshot`/`record` in actions - instead specify this in Tourist options when dispatching the request.
+* Treat actions as top-level synchronous code. They may return either a concrete value, or a Promise - which will be
+awaited, however it's not an async context, so if you need to use `async`/`await` wrap your action in an
+[IIFE](https://developer.mozilla.org/en-US/docs/Glossary/IIFE#execute_an_async_function) expression.
+  * As actions can return a Promise - it's completely fine to execute simple playwright calls which return a Promise,
+    without the added complexity - for example `page.click('a')` is a valid action (although
+    [depreciated](https://playwright.dev/docs/api/class-page#page-click), which will be awaited.
+  * Multi-line statements are allowed inside an IIFE expression, so follow the same pattern if you need to use for
+    example, a for loop.
+
+For full reference please check our guide on [Tourist actions](./docs/04-using-actions.md).
 
 ### Legacy API
 

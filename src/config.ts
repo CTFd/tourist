@@ -21,7 +21,7 @@ if (process.env.NODE_ENV !== "test") {
 
 export default {
   SECRET: process.env.SECRET || crypto.randomBytes(48).toString("hex"),
-  ENV: process.env.NODE_ENV || "development",
+  ENV: process.env.NODE_ENV || "production",
   REDIS_URL: process.env.REDIS_URL || "redis://127.0.0.1:6379",
   HOST: process.env.HOST || "127.0.0.1",
   PORT: parseInt(process.env.PORT ? process.env.PORT : "3000"),
