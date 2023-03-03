@@ -106,8 +106,10 @@ For full reference please check our guide on [Tourist authentication](./docs/02-
 You can specify actions to be performed during each step. Actions are an array of strings (code) to be passed to
 playwright inside an isolated sandbox. There are a few guidelines for you to follow:
 
-* You will want to execute methods off of the provided `page` variable - which will be a playwright
-  [`Page`](https://playwright.dev/docs/api/class-page) object - already after navigation to the specified url.
+* You will want to execute methods off of the provided `page`, and `context` variables - which will be a playwright
+  [`Page`](https://playwright.dev/docs/api/class-page), and
+  [`BrowserContext`](https://playwright.dev/docs/api/class-browsercontext) objects respectively - already after
+  navigation to the specified url.
   * You can register event handlers by using [`page.on()`](https://playwright.dev/docs/api/class-page#events) -
     which will be registered before the page loads.
   * Use camelCased methods - as in the playwright docs.
