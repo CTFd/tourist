@@ -268,7 +268,7 @@ test("PlaywrightRunner steps can interact with anchors", async (t) => {
   t.is(headers.referer, `${testAppURL}/anchor?id=${testID}`);
 });
 
-test("PlaywrightRunner actions can use output from the context (for-async)", async (t) => {
+test("PlaywrightRunner actions can use output from the actions output (for-async)", async (t) => {
   const { testApp, testAppURL } = t.context;
   const testID = uuid4();
 
@@ -280,7 +280,7 @@ test("PlaywrightRunner actions can use output from the context (for-async)", asy
         actions: [
           "page.locator('a').all()",
           `(async () => {
-            for (const link of context[0]) {
+            for (const link of actions[0]) {
               await link.click({ button: "middle" });
             }
           })()`,
@@ -310,7 +310,7 @@ test("PlaywrightRunner actions can use output from the context (for-async)", asy
   }
 });
 
-test("PlaywrightRunner actions can use output from the context (reduce-promise)", async (t) => {
+test("PlaywrightRunner actions can use output from the actions output (reduce-promise)", async (t) => {
   const { testApp, testAppURL } = t.context;
   const testID = uuid4();
 
@@ -321,7 +321,7 @@ test("PlaywrightRunner actions can use output from the context (reduce-promise)"
         url: `${testAppURL}/multiple-anchors?id=${testID}`,
         actions: [
           "page.locator('a').all()",
-          `context[0].reduce(
+          `actions[0].reduce(
             (previous, link) => previous.then(
               () => link.click({ button: "middle" }).then(null)
             ),
@@ -353,7 +353,7 @@ test("PlaywrightRunner actions can use output from the context (reduce-promise)"
   }
 });
 
-test("PlaywrightRunner actions can use output from the context (reduce-async)", async (t) => {
+test("PlaywrightRunner actions can use output from the actions output (reduce-async)", async (t) => {
   const { testApp, testAppURL } = t.context;
   const testID = uuid4();
 
@@ -364,7 +364,7 @@ test("PlaywrightRunner actions can use output from the context (reduce-async)", 
         url: `${testAppURL}/multiple-anchors?id=${testID}`,
         actions: [
           "page.locator('a').all()",
-          `context[0].reduce(
+          `actions[0].reduce(
              async (previous, link) => {
                await previous;
                await link.click({ button: "middle" });
@@ -397,7 +397,53 @@ test("PlaywrightRunner actions can use output from the context (reduce-async)", 
   }
 });
 
-test("PlaywrightRunner assigns correct index to output values in the context", async (t) => {
+test("PlaywrightRunner actions can use playwright context", async (t) => {
+  const { testApp, testAppURL } = t.context;
+  const testID = uuid4();
+
+  const runner = new PlaywrightRunner({
+    browser: JobBrowser.CHROMIUM,
+    steps: [
+      {
+        url: `${testAppURL}/multiple-anchors?id=${testID}`,
+        actions: [
+          `(async () => {
+            const links = await page.locator('a').all();
+            for (const link of links) {
+              const pagePromise = context.waitForEvent('page');
+              await link.click({ button: 'middle' });
+              const newPage = await pagePromise;
+              await newPage.waitForLoadState();
+              await newPage.close();
+            }
+          })()`,
+        ],
+      },
+    ],
+    cookies: [],
+    options: [],
+  });
+
+  await runner.init();
+  await runner.exec();
+  await runner.finish();
+
+  for (let i = 1; i <= 3; i++) {
+    const inspection = await testApp.inject({
+      method: "GET",
+      url: "/inspect-req",
+      query: {
+        id: `${testID}-${i}`,
+      },
+    });
+
+    const { headers } = inspection.json();
+    t.assert(headers.hasOwnProperty("referer"));
+    t.is(headers.referer, `${testAppURL}/multiple-anchors?id=${testID}`);
+  }
+});
+
+test("PlaywrightRunner assigns correct index to output values in the actions output", async (t) => {
   const { testApp, testAppURL } = t.context;
   const testID = uuid4();
 
@@ -407,12 +453,12 @@ test("PlaywrightRunner assigns correct index to output values in the context", a
       {
         url: `${testAppURL}/anchor?id=${testID}`,
         actions: [
-          // output should still be available under context[0]
+          // output should still be available under actions[0]
           // even though page.on will be moved before that
           "page.locator('a').all()",
           "page.on('dialog', dialog => dialog.accept())",
           `(async () => {
-            for (const link of context[0]) {
+            for (const link of actions[0]) {
               await link.click({ button: "middle" });
             }
           })()`,
@@ -532,7 +578,7 @@ test("PlaywrightRunner actions cannot assign properties to frozen objects", asyn
     steps: [
       {
         url: `${testAppURL}/anchor?id=${testID}`,
-        actions: ["context[1337] = 'test1337'"],
+        actions: ["actions[1337] = 'test1337'"],
       },
     ],
     cookies: [],
@@ -548,6 +594,23 @@ test("PlaywrightRunner actions cannot assign properties to frozen objects", asyn
   t.assert(runner_2.actionContext.indexOf("test1337") == 0);
   t.assert(runner_2.actionContext.indexOf("test1337") != 1337);
   await runner_2.finish();
+
+  const runner_3 = new PlaywrightRunner({
+    browser: JobBrowser.CHROMIUM,
+    steps: [
+      {
+        url: `${testAppURL}/anchor?id=${testID}`,
+        actions: ["context.test = 'test'"],
+      },
+    ],
+    cookies: [],
+    options: [],
+  });
+
+  await runner_3.init();
+  await runner_3.exec();
+  t.false(runner_3.context!.hasOwnProperty("test"));
+  await runner_3.finish();
 });
 
 test("PlaywrightRunner steps can interact with buttons", async (t) => {
