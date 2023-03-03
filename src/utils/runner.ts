@@ -78,7 +78,7 @@ export class PlaywrightRunner {
   // exec() iterates over steps, splits actions into pre- and post-open and executes
   // them in an isolated context with access only to the page
   public async exec() {
-    if (!this.page) {
+    if (!this.page || !this.context) {
       throw new Error(
         `Attempted to exec() on an uninitialized runner, did you forget to call init() or has teardown() already been called?`,
       );
@@ -104,9 +104,10 @@ export class PlaywrightRunner {
         wasm: false,
       });
 
-      const { page, _actionContext } = this;
+      const { page, context, _actionContext } = this;
       vm.freeze(page, "page");
-      vm.freeze(_actionContext, "context");
+      vm.freeze(context, "context");
+      vm.freeze(_actionContext, "actions");
 
       if (this._debug) {
         vm.freeze(console, "console");
