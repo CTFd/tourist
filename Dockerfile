@@ -3,7 +3,7 @@ WORKDIR /build
 COPY . .
 RUN yarn && yarn build
 
-FROM mcr.microsoft.com/playwright:v1.27.1-focal
+FROM mcr.microsoft.com/playwright:v1.31.1-focal
 LABEL org.opencontainers.image.source="https://github.com/CTFd/Tourist"
 
 RUN apt update && \
