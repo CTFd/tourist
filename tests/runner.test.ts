@@ -511,7 +511,9 @@ test("PlaywrightRunner actions cannot generate code from strings", async (t) => 
       t.assert(typeof runner_1.actionContext[0] === "undefined");
       await runner_1.finish();
     },
-    { message: `[runtime] invalid action "new Function('return (1+2)')()"` },
+    {
+      message: `[runtime] invalid action "new Function('return (1+2)')()" - Code generation from strings disallowed for this context`,
+    },
   );
 
   const runner_2 = new PlaywrightRunner({
@@ -545,7 +547,10 @@ test("PlaywrightRunner actions cannot generate code from strings", async (t) => 
           message.replace(/\s/g, "") ===
           `[runtime] invalid action "(async () => {
               return new Function('return (1+2)')();
-          })()"`.replace(/\s/g, "")
+          })()" - Code generation from strings disallowed for this context`.replace(
+            /\s/g,
+            "",
+          )
         );
       },
     },
@@ -918,7 +923,7 @@ test("PlaywrightRunner runs actions in an isolated context", async (t) => {
       await runner_1.exec();
       await runner_1.finish();
     },
-    { message: '[runtime] invalid action "process.exit()"' },
+    { message: '[runtime] invalid action "process.exit()" - process is not defined' },
   );
 
   const runner_2 = new PlaywrightRunner({
@@ -939,7 +944,9 @@ test("PlaywrightRunner runs actions in an isolated context", async (t) => {
       await runner_2.exec();
       await runner_2.finish();
     },
-    { message: `[runtime] invalid action "require('child_process').execSync('id')"` },
+    {
+      message: `[runtime] invalid action "require('child_process').execSync('id')" - require is not defined`,
+    },
   );
 
   const runner_3 = new PlaywrightRunner({
@@ -963,7 +970,7 @@ test("PlaywrightRunner runs actions in an isolated context", async (t) => {
       await runner_3.finish();
     },
     {
-      message: `[runtime] invalid action "process.mainModule.require('child_process').execSync('id').toString()"`,
+      message: `[runtime] invalid action "process.mainModule.require('child_process').execSync('id').toString()" - process is not defined`,
     },
   );
 
@@ -986,7 +993,7 @@ test("PlaywrightRunner runs actions in an isolated context", async (t) => {
       await runner_4.finish();
     },
     {
-      message: `[runtime] invalid action "this.constructor.constructor('return process')().exit()"`,
+      message: `[runtime] invalid action "this.constructor.constructor('return process')().exit()" - Code generation from strings disallowed for this context`,
     },
   );
 });
@@ -1034,7 +1041,9 @@ test("PlaywrightRunner closes the browser if an error occurs", async (t) => {
       await runner_1.exec();
       await runner_1.finish();
     },
-    { message: `[runtime] invalid action "page.on('invalid')"` },
+    {
+      message: `[runtime] invalid action "page.on('invalid')" - The "listener" argument must be of type function. Received undefined`,
+    },
   );
 
   t.assert(runner_1.browser === undefined);
@@ -1058,7 +1067,11 @@ test("PlaywrightRunner closes the browser if an error occurs", async (t) => {
       await runner_2.finish();
     },
     {
-      message: `[runtime] invalid action "page.waitForSelector('nonexistent', {timeout: 1000})"`,
+      message: (message) => {
+        return message.startsWith(
+          `[runtime] invalid action "page.waitForSelector('nonexistent', {timeout: 1000})" - page.waitForSelector: Timeout 1000ms exceeded.`,
+        );
+      },
     },
   );
 

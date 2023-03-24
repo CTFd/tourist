@@ -1,5 +1,6 @@
 import { Job } from "bull";
 
+import config from "../config";
 import { JobBrowser, JobCookieType, JobOptions, JobStepType } from "../schemas/api";
 import { PlaywrightRunner } from "../utils/runner";
 
