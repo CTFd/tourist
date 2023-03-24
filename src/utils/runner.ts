@@ -93,8 +93,15 @@ export class PlaywrightRunner {
       };
 
       if (step.actions) {
-        [actions.preOpen, actions.postOpen] = _.partition(step.actions, (action) =>
-          action.startsWith("page.on"),
+        [actions.preOpen, actions.postOpen] = _.partition(
+          step.actions,
+          (action) =>
+            action.startsWith("page.on") ||
+            action.startsWith("page.setDefaultTimeout") ||
+            action.startsWith("page.setDefaultNavigationTimeout") ||
+            action.startsWith("context.on") ||
+            action.startsWith("context.setDefaultTimeout") ||
+            action.startsWith("context.setDefaultNavigationTimeout"),
         );
       }
 
@@ -119,9 +126,10 @@ export class PlaywrightRunner {
           try {
             const idx = step.actions.indexOf(preOpenAction);
             this._actionContext[idx] = await vm.run(preOpenAction);
-          } catch (e) {
+          } catch (e: any) {
+            const msg = e.message ? ` - ${e.message}` : "";
             await this.teardown();
-            throw new Error(`[runtime] invalid action "${preOpenAction}"`);
+            throw new Error(`[runtime] invalid action "${preOpenAction}"${msg}`);
           }
         }
       }
@@ -136,9 +144,10 @@ export class PlaywrightRunner {
             const idx = step.actions.indexOf(postOpenAction);
             this._actionContext[idx] = await vm.run(postOpenAction);
             await this.page.waitForLoadState();
-          } catch (e) {
+          } catch (e: any) {
+            const msg = e.message ? ` - ${e.message}` : "";
             await this.teardown();
-            throw new Error(`[runtime] invalid action "${postOpenAction}"`);
+            throw new Error(`[runtime] invalid action "${postOpenAction}"${msg}`);
           }
         }
       }
