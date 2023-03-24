@@ -12,7 +12,7 @@ export declare type VisitJobData = {
 
 export const asyncVisitJob = async (job: Job<VisitJobData>) => {
   const { data } = job;
-  const runner = new PlaywrightRunner(data);
+  const runner = new PlaywrightRunner(data, config.DEBUG);
 
   try {
     await runner.init();
@@ -26,7 +26,7 @@ export const asyncVisitJob = async (job: Job<VisitJobData>) => {
 };
 
 export const syncVisitJob = async (data: VisitJobData) => {
-  const runner = new PlaywrightRunner(data);
+  const runner = new PlaywrightRunner(data, config.DEBUG);
 
   try {
     await runner.init();

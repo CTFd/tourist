@@ -5,6 +5,7 @@ import crypto from "crypto";
 import { parseBool } from "./utils/config";
 
 export declare type TouristConfig = {
+  DEBUG: boolean;
   SECRET: string;
   ENV: string;
   REDIS_URL: string;
@@ -20,6 +21,7 @@ if (process.env.NODE_ENV !== "test") {
 }
 
 export default {
+  DEBUG: parseBool(process.env.DEBUG, false),
   SECRET: process.env.SECRET || crypto.randomBytes(48).toString("hex"),
   ENV: process.env.NODE_ENV || "production",
   REDIS_URL: process.env.REDIS_URL || "redis://127.0.0.1:6379",
