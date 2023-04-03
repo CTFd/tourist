@@ -18,6 +18,7 @@ export const createApp = async (
   app.decorate("config", config);
 
   if (app.config.SENTRY_DSN) {
+    app.log.info("Sentry Reporting Enabled")
     initSentry(app);
   }
 

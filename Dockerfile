@@ -23,4 +23,4 @@ ENV NODE_ENV=production \
 
 RUN yarn --production
 ENTRYPOINT ["/usr/bin/tini", "--"]
-CMD ["yarn", "start:serve"]
+CMD ["yarn", "start:docker"]
