@@ -4,8 +4,8 @@ import {
   FastifyReply,
   FastifyRequest,
 } from "fastify";
-
 import _ from "lodash";
+import * as Sentry from "@sentry/node";
 
 import {
   JobDispatchRequest,
@@ -31,6 +31,14 @@ import {
   AsyncJob403Reply,
   SyncJob401Reply,
   SyncJob403Reply,
+  SyncJob401ReplyType,
+  SyncJob403ReplyType,
+  AsyncJob403ReplyType,
+  AsyncJob401ReplyType,
+  AsyncJobStatus401Reply,
+  AsyncJobStatus403Reply,
+  AsyncJobStatus401ReplyType,
+  AsyncJobStatus403ReplyType,
 } from "../schemas/api";
 import { AsyncVisitQueue } from "../queue";
 import { syncVisitJob, VisitJobData } from "../jobs/api";
@@ -44,7 +52,11 @@ export default (
   fastify.post<{
     Headers: JobDispatchRequestHeadersType;
     Body: JobDispatchRequestType;
-    Reply: AsyncJob200ReplyType | AsyncJob400ReplyType;
+    Reply:
+      | AsyncJob200ReplyType
+      | AsyncJob400ReplyType
+      | AsyncJob401ReplyType
+      | AsyncJob403ReplyType;
   }>("/async-job", {
     schema: {
       headers: JobDispatchRequestHeaders,
@@ -62,7 +74,11 @@ export default (
   fastify.post<{
     Headers: JobDispatchRequestHeadersType;
     Body: JobDispatchRequestType;
-    Reply: SyncJob200ReplyType | SyncJob400ReplyType;
+    Reply:
+      | SyncJob200ReplyType
+      | SyncJob400ReplyType
+      | SyncJob401ReplyType
+      | SyncJob403ReplyType;
   }>("/sync-job", {
     schema: {
       body: JobDispatchRequest,
@@ -78,12 +94,18 @@ export default (
 
   fastify.get<{
     Querystring: AsyncJobStatusRequestType;
-    Reply: AsyncJobStatus200ReplyType | AsyncJobStatus404ReplyType;
+    Reply:
+      | AsyncJobStatus200ReplyType
+      | AsyncJobStatus401ReplyType
+      | AsyncJobStatus403ReplyType
+      | AsyncJobStatus404ReplyType;
   }>("/job-status", {
     schema: {
       querystring: AsyncJobStatusRequest,
       response: {
         200: AsyncJobStatus200Reply,
+        401: AsyncJobStatus401Reply,
+        403: AsyncJobStatus403Reply,
         404: AsyncJobStatus404Reply,
       },
     },
