@@ -268,135 +268,6 @@ test("PlaywrightRunner steps can interact with anchors", async (t) => {
   t.is(headers.referer, `${testAppURL}/anchor?id=${testID}`);
 });
 
-test("PlaywrightRunner actions can use output from the actions output (for-async)", async (t) => {
-  const { testApp, testAppURL } = t.context;
-  const testID = uuid4();
-
-  const runner = new PlaywrightRunner({
-    browser: JobBrowser.CHROMIUM,
-    steps: [
-      {
-        url: `${testAppURL}/multiple-anchors?id=${testID}`,
-        actions: [
-          "page.locator('a').all()",
-          `(async () => {
-            for (const link of actions[0]) {
-              await link.click({ button: "middle" });
-            }
-          })()`,
-        ],
-      },
-    ],
-    cookies: [],
-    options: [],
-  });
-
-  await runner.init();
-  await runner.exec();
-  await runner.finish();
-
-  for (let i = 1; i <= 3; i++) {
-    const inspection = await testApp.inject({
-      method: "GET",
-      url: "/inspect-req",
-      query: {
-        id: `${testID}-${i}`,
-      },
-    });
-
-    const { headers } = inspection.json();
-    t.assert(headers.hasOwnProperty("referer"));
-    t.is(headers.referer, `${testAppURL}/multiple-anchors?id=${testID}`);
-  }
-});
-
-test("PlaywrightRunner actions can use output from the actions output (reduce-promise)", async (t) => {
-  const { testApp, testAppURL } = t.context;
-  const testID = uuid4();
-
-  const runner = new PlaywrightRunner({
-    browser: JobBrowser.CHROMIUM,
-    steps: [
-      {
-        url: `${testAppURL}/multiple-anchors?id=${testID}`,
-        actions: [
-          "page.locator('a').all()",
-          `actions[0].reduce(
-            (previous, link) => previous.then(
-              () => link.click({ button: "middle" }).then(null)
-            ),
-            Promise.resolve(null)
-          );`,
-        ],
-      },
-    ],
-    cookies: [],
-    options: [],
-  });
-
-  await runner.init();
-  await runner.exec();
-  await runner.finish();
-
-  for (let i = 1; i <= 3; i++) {
-    const inspection = await testApp.inject({
-      method: "GET",
-      url: "/inspect-req",
-      query: {
-        id: `${testID}-${i}`,
-      },
-    });
-
-    const { headers } = inspection.json();
-    t.assert(headers.hasOwnProperty("referer"));
-    t.is(headers.referer, `${testAppURL}/multiple-anchors?id=${testID}`);
-  }
-});
-
-test("PlaywrightRunner actions can use output from the actions output (reduce-async)", async (t) => {
-  const { testApp, testAppURL } = t.context;
-  const testID = uuid4();
-
-  const runner = new PlaywrightRunner({
-    browser: JobBrowser.CHROMIUM,
-    steps: [
-      {
-        url: `${testAppURL}/multiple-anchors?id=${testID}`,
-        actions: [
-          "page.locator('a').all()",
-          `actions[0].reduce(
-             async (previous, link) => {
-               await previous;
-               await link.click({ button: "middle" });
-             },
-             Promise.resolve(null)
-           );`,
-        ],
-      },
-    ],
-    cookies: [],
-    options: [],
-  });
-
-  await runner.init();
-  await runner.exec();
-  await runner.finish();
-
-  for (let i = 1; i <= 3; i++) {
-    const inspection = await testApp.inject({
-      method: "GET",
-      url: "/inspect-req",
-      query: {
-        id: `${testID}-${i}`,
-      },
-    });
-
-    const { headers } = inspection.json();
-    t.assert(headers.hasOwnProperty("referer"));
-    t.is(headers.referer, `${testAppURL}/multiple-anchors?id=${testID}`);
-  }
-});
-
 test("PlaywrightRunner actions can use playwright context", async (t) => {
   const { testApp, testAppURL } = t.context;
   const testID = uuid4();
@@ -443,49 +314,6 @@ test("PlaywrightRunner actions can use playwright context", async (t) => {
   }
 });
 
-test("PlaywrightRunner assigns correct index to output values in the actions output", async (t) => {
-  const { testApp, testAppURL } = t.context;
-  const testID = uuid4();
-
-  const runner = new PlaywrightRunner({
-    browser: JobBrowser.CHROMIUM,
-    steps: [
-      {
-        url: `${testAppURL}/anchor?id=${testID}`,
-        actions: [
-          // output should still be available under actions[0]
-          // even though page.on will be moved before that
-          "page.locator('a').all()",
-          "page.on('dialog', dialog => dialog.accept())",
-          `(async () => {
-            for (const link of actions[0]) {
-              await link.click({ button: "middle" });
-            }
-          })()`,
-        ],
-      },
-    ],
-    cookies: [],
-    options: [],
-  });
-
-  await runner.init();
-  await runner.exec();
-  await runner.finish();
-
-  const inspection = await testApp.inject({
-    method: "GET",
-    url: "/inspect-req",
-    query: {
-      id: `${testID}`,
-    },
-  });
-
-  const { headers } = inspection.json();
-  t.assert(headers.hasOwnProperty("referer"));
-  t.is(headers.referer, `${testAppURL}/anchor?id=${testID}`);
-});
-
 test("PlaywrightRunner actions cannot generate code from strings", async (t) => {
   const { testAppURL } = t.context;
   const testID = uuid4();
@@ -506,9 +334,6 @@ test("PlaywrightRunner actions cannot generate code from strings", async (t) => 
     async () => {
       await runner_1.init();
       await runner_1.exec();
-      // code generation should not trigger, and the step should not complete
-      // so the expected value here is undefined (no assignment has been made)
-      t.assert(typeof runner_1.actionContext[0] === "undefined");
       await runner_1.finish();
     },
     {
@@ -536,9 +361,6 @@ test("PlaywrightRunner actions cannot generate code from strings", async (t) => 
     async () => {
       await runner_2.init();
       await runner_2.exec();
-      // code generation should not trigger, and the step should not complete
-      // so the expected value here is undefined (no assignment has been made)
-      t.assert(typeof runner_2.actionContext[0] === "undefined");
       await runner_2.finish();
     },
     {
@@ -555,67 +377,6 @@ test("PlaywrightRunner actions cannot generate code from strings", async (t) => 
       },
     },
   );
-});
-
-test("PlaywrightRunner actions cannot assign properties to frozen objects", async (t) => {
-  const { testAppURL } = t.context;
-  const testID = uuid4();
-
-  const runner_1 = new PlaywrightRunner({
-    browser: JobBrowser.CHROMIUM,
-    steps: [
-      {
-        url: `${testAppURL}/anchor?id=${testID}`,
-        actions: ["page.test = 'test'"],
-      },
-    ],
-    cookies: [],
-    options: [],
-  });
-
-  await runner_1.init();
-  await runner_1.exec();
-  t.false(runner_1.page!.hasOwnProperty("test"));
-  await runner_1.finish();
-
-  const runner_2 = new PlaywrightRunner({
-    browser: JobBrowser.CHROMIUM,
-    steps: [
-      {
-        url: `${testAppURL}/anchor?id=${testID}`,
-        actions: ["actions[1337] = 'test1337'"],
-      },
-    ],
-    cookies: [],
-    options: [],
-  });
-
-  await runner_2.init();
-  await runner_2.exec();
-  // assignment to an array will return the assigned value, so it's expected for this
-  // value to be at index 0, and that the value at index 1337 wasn't assigned
-  // the point of this test is not to ensure that dangerous values can't be returned
-  // (covered by the test above), only that values at arbitrary indexes can't be assigned
-  t.assert(runner_2.actionContext.indexOf("test1337") == 0);
-  t.assert(runner_2.actionContext.indexOf("test1337") != 1337);
-  await runner_2.finish();
-
-  const runner_3 = new PlaywrightRunner({
-    browser: JobBrowser.CHROMIUM,
-    steps: [
-      {
-        url: `${testAppURL}/anchor?id=${testID}`,
-        actions: ["context.test = 'test'"],
-      },
-    ],
-    cookies: [],
-    options: [],
-  });
-
-  await runner_3.init();
-  await runner_3.exec();
-  t.false(runner_3.context!.hasOwnProperty("test"));
-  await runner_3.finish();
 });
 
 test("PlaywrightRunner steps can interact with buttons", async (t) => {

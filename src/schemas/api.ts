@@ -120,6 +120,8 @@ export const AsyncJob401Reply = Type.Object({
   message: Type.String(),
 });
 
+export type AsyncJob401ReplyType = Static<typeof AsyncJob401Reply>;
+
 export const AsyncJob403Reply = Type.Object({
   statusCode: Type.Literal(403),
   error: Type.String(),
@@ -144,6 +146,22 @@ export const AsyncJobStatus200Reply = Type.Object({
 });
 
 export type AsyncJobStatus200ReplyType = Static<typeof AsyncJobStatus200Reply>;
+
+export const AsyncJobStatus401Reply = Type.Object({
+  statusCode: Type.Literal(401),
+  error: Type.String(),
+  message: Type.String(),
+});
+
+export type AsyncJobStatus401ReplyType = Static<typeof AsyncJobStatus401Reply>;
+
+export const AsyncJobStatus403Reply = Type.Object({
+  statusCode: Type.Literal(403),
+  error: Type.String(),
+  message: Type.String(),
+});
+
+export type AsyncJobStatus403ReplyType = Static<typeof AsyncJobStatus403Reply>;
 
 export const AsyncJobStatus404Reply = Type.Object({
   statusCode: Type.Literal(404),

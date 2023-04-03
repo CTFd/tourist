@@ -10,4 +10,4 @@ services:
       REDIS_URL: redis://redis:6379
 
   redis:
-    image: redis:alpine
+    image: redis:7.0-alpine

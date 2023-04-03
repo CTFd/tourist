@@ -79,11 +79,18 @@ like [pm2](https://pm2.keymetrics.io/) or with a systemd service.
 ### Configuration Reference
 
 | Option                | Default                 | Description                                                    |
-| --------------------- | ----------------------- |----------------------------------------------------------------|
+|-----------------------|-------------------------|----------------------------------------------------------------|
 | SECRET                | (dynamically generated) | Secret value for token authentication purposes.                |
 | NODE_ENV              | production              | Environment Tourist is running in.                             |
 | REDIS_URL             | redis://127.0.0.1:6379  | URL of the redis server.                                       |
+| CONCURRENCY           | (number of CPU threads) | Maximum number of jobs processed concurrently.                 |
 | HOST                  | 127.0.0.1               | Host address that Tourist will listen on.                      |
 | PORT                  | 3000                    | Port on the host address that tourist will listen on.          |
 | ENABLE_LEGACY_API     | false                   | Whether to enable legacy portion of the API (not recommended). |
 | ENABLE_AUTHENTICATION | true                    | Whether to enable authentication with tokens (recommended).    |
+
+#### Note on concurrency
+
+Concurrency value defaults to the number of threads present on the system. It is not recommend to go above this value,
+as a headless browser can consume a full thread even for simple operations. You should also account for the RAM
+available on your system, as each additional browser can consume somewhere around 100/200MB of RAM.

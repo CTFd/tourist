@@ -4,8 +4,8 @@ import {
   FastifyReply,
   FastifyRequest,
 } from "fastify";
-
 import _ from "lodash";
+import * as Sentry from "@sentry/node";
 
 import {
   JobDispatchRequest,
@@ -31,6 +31,14 @@ import {
   AsyncJob403Reply,
   SyncJob401Reply,
   SyncJob403Reply,
+  SyncJob401ReplyType,
+  SyncJob403ReplyType,
+  AsyncJob403ReplyType,
+  AsyncJob401ReplyType,
+  AsyncJobStatus401Reply,
+  AsyncJobStatus403Reply,
+  AsyncJobStatus401ReplyType,
+  AsyncJobStatus403ReplyType,
 } from "../schemas/api";
 import { AsyncVisitQueue } from "../queue";
 import { syncVisitJob, VisitJobData } from "../jobs/api";
@@ -44,7 +52,11 @@ export default (
   fastify.post<{
     Headers: JobDispatchRequestHeadersType;
     Body: JobDispatchRequestType;
-    Reply: AsyncJob200ReplyType | AsyncJob400ReplyType;
+    Reply:
+      | AsyncJob200ReplyType
+      | AsyncJob400ReplyType
+      | AsyncJob401ReplyType
+      | AsyncJob403ReplyType;
   }>("/async-job", {
     schema: {
       headers: JobDispatchRequestHeaders,
@@ -62,7 +74,11 @@ export default (
   fastify.post<{
     Headers: JobDispatchRequestHeadersType;
     Body: JobDispatchRequestType;
-    Reply: SyncJob200ReplyType | SyncJob400ReplyType;
+    Reply:
+      | SyncJob200ReplyType
+      | SyncJob400ReplyType
+      | SyncJob401ReplyType
+      | SyncJob403ReplyType;
   }>("/sync-job", {
     schema: {
       body: JobDispatchRequest,
@@ -78,12 +94,18 @@ export default (
 
   fastify.get<{
     Querystring: AsyncJobStatusRequestType;
-    Reply: AsyncJobStatus200ReplyType | AsyncJobStatus404ReplyType;
+    Reply:
+      | AsyncJobStatus200ReplyType
+      | AsyncJobStatus401ReplyType
+      | AsyncJobStatus403ReplyType
+      | AsyncJobStatus404ReplyType;
   }>("/job-status", {
     schema: {
       querystring: AsyncJobStatusRequest,
       response: {
         200: AsyncJobStatus200Reply,
+        401: AsyncJobStatus401Reply,
+        403: AsyncJobStatus403Reply,
         404: AsyncJobStatus404Reply,
       },
     },
@@ -93,7 +115,7 @@ export default (
   done();
 };
 
-const authenticateDispatchRequest = (request: FastifyRequest, secret: string) => {
+const authenticateDispatchRequest = (request: FastifyRequest) => {
   const data = <JobDispatchRequestType>request.body;
   const { authorization } = <JobDispatchRequestHeadersType>request.headers;
 
@@ -106,7 +128,7 @@ const authenticateDispatchRequest = (request: FastifyRequest, secret: string) =>
   }
 
   const visitURLs = _.map(data.steps, "url");
-  if (!authenticateVisitToken(authorization, visitURLs, secret)) {
+  if (!authenticateVisitToken(authorization, visitURLs)) {
     return {
       statusCode: 403,
       error: "Forbidden",
@@ -118,11 +140,7 @@ const authenticateDispatchRequest = (request: FastifyRequest, secret: string) =>
   return true;
 };
 
-const authenticateStatusRequest = (
-  request: FastifyRequest,
-  data: VisitJobData,
-  secret: string,
-) => {
+const authenticateStatusRequest = (request: FastifyRequest, data: VisitJobData) => {
   const { authorization } = <JobDispatchRequestHeadersType>request.headers;
 
   if (!authorization) {
@@ -134,7 +152,7 @@ const authenticateStatusRequest = (
   }
 
   const visitURLs = _.map(data.steps, "url");
-  if (!authenticateVisitToken(authorization, visitURLs, secret)) {
+  if (!authenticateVisitToken(authorization, visitURLs)) {
     return {
       statusCode: 403,
       error: "Forbidden",
@@ -150,10 +168,7 @@ const getAsyncJobHandler = (fastify: FastifyInstance) => {
     const data = <JobDispatchRequestType>request.body;
 
     if (fastify.config.ENABLE_AUTHENTICATION) {
-      const authenticationResult = authenticateDispatchRequest(
-        request,
-        fastify.config.SECRET,
-      );
+      const authenticationResult = authenticateDispatchRequest(request);
 
       if (authenticationResult !== true) {
         return reply.status(authenticationResult.statusCode).send(authenticationResult);
@@ -170,17 +185,25 @@ const getSyncJobHandler = (fastify: FastifyInstance) => {
     const data = <JobDispatchRequestType>request.body;
 
     if (fastify.config.ENABLE_AUTHENTICATION) {
-      const authenticationResult = authenticateDispatchRequest(
-        request,
-        fastify.config.SECRET,
-      );
+      const authenticationResult = authenticateDispatchRequest(request);
+
       if (authenticationResult !== true) {
         return reply.status(authenticationResult.statusCode).send(authenticationResult);
       }
     }
 
-    const jobResult = await syncVisitJob(data);
-    return reply.send({ status: "success", result: jobResult });
+    try {
+      const jobResult = await syncVisitJob(data);
+      return reply.send({ status: "success", result: jobResult });
+    } catch (e: any) {
+      if (fastify.config.SENTRY_DSN) {
+        Sentry.captureException(e);
+      }
+
+      return reply
+        .status(400)
+        .send({ statusCode: 400, error: "Bad Request", message: e.message });
+    }
   };
 };
 
@@ -198,11 +221,7 @@ const getAsyncJobStatusHandler = (fastify: FastifyInstance) => {
     }
 
     if (fastify.config.ENABLE_AUTHENTICATION) {
-      const authenticationResult = authenticateStatusRequest(
-        request,
-        job.data,
-        fastify.config.SECRET,
-      );
+      const authenticationResult = authenticateStatusRequest(request, job.data);
 
       if (authenticationResult !== true) {
         return reply.status(authenticationResult.statusCode).send(authenticationResult);
