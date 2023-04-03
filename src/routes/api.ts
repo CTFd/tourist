@@ -174,13 +174,24 @@ const getSyncJobHandler = (fastify: FastifyInstance) => {
         request,
         fastify.config.SECRET,
       );
+
       if (authenticationResult !== true) {
         return reply.status(authenticationResult.statusCode).send(authenticationResult);
       }
     }
 
-    const jobResult = await syncVisitJob(data);
-    return reply.send({ status: "success", result: jobResult });
+    try {
+      const jobResult = await syncVisitJob(data);
+      return reply.send({ status: "success", result: jobResult });
+    } catch (e: any) {
+      if (fastify.config.SENTRY_DSN) {
+        Sentry.captureException(e);
+      }
+
+      return reply
+        .status(400)
+        .send({ statusCode: 400, error: "Bad Request", message: e.message });
+    }
   };
 };
 

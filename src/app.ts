@@ -1,10 +1,10 @@
 import Fastify, { FastifyServerOptions } from "fastify";
 import { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
 
-import fastifySentry from "@immobiliarelabs/fastify-sentry";
 import fastifySwagger from "@fastify/swagger";
 import fastifySwaggerUI from "@fastify/swagger-ui";
 
+import initSentry from "./sentry";
 import { TouristConfig } from "./config";
 import { createRouter } from "./router";
 import { SwaggerConfig } from "./swagger";
@@ -18,10 +18,7 @@ export const createApp = async (
   app.decorate("config", config);
 
   if (app.config.SENTRY_DSN) {
-    app.register(fastifySentry, {
-      dsn: app.config.SENTRY_DSN,
-      environment: app.config.ENV,
-    });
+    initSentry(app);
   }
 
   app.register(fastifySwagger, SwaggerConfig);

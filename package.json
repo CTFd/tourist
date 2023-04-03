@@ -8,7 +8,7 @@
   "license": "Apache-2.0",
   "scripts": {
     "cmd:get-issuer-token": "ts-node ./src/cli.ts get-issuer-token",
-    "build": "rm -rf ./out && tsc -p tsconfig.json",
+    "build": "rm -rf ./out && tsc -p tsconfig.production.json",
     "start:serve": "node ./src/index.js",
     "start:build": "yarn build && node out/index.js",
     "start:app": "nodemon ./src/index.ts | pino-pretty",
@@ -28,7 +28,8 @@
     "@fastify/swagger": "^8.2.1",
     "@fastify/swagger-ui": "^1.3.0",
     "@fastify/type-provider-typebox": "^2.4.0",
-    "@immobiliarelabs/fastify-sentry": "^5.0.1",
+    "@sentry/integrations": "^7.46.0",
+    "@sentry/node": "^7.46.0",
     "@sinclair/typebox": "^0.25.24",
     "bull": "^4.10.2",
     "dotenv": "^16.0.3",
@@ -66,9 +67,6 @@
     "nodeArguments": [
       "--loader=ts-node/esm",
       "--no-warnings"
-    ],
-    "ignoredByWatcher": [
-      "static/openapi.json"
     ]
   }
 }

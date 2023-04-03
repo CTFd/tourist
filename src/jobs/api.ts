@@ -1,4 +1,5 @@
 import { Job } from "bull";
+import * as Sentry from "@sentry/node";
 
 import config from "../config";
 import { JobBrowser, JobCookieType, JobOptions, JobStepType } from "../schemas/api";
@@ -13,12 +14,17 @@ export declare type VisitJobData = {
 
 export const asyncVisitJob = async (job: Job<VisitJobData>) => {
   const { data } = job;
+
   const runner = new PlaywrightRunner(data, config.DEBUG);
 
   try {
     await runner.init();
     await runner.exec();
   } catch (e: any) {
+    if (config.SENTRY_DSN) {
+      Sentry.captureException(e);
+    }
+
     // change the job status to failed with the error message
     await job.moveToFailed({ message: e.message });
   }
