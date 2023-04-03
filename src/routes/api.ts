@@ -115,7 +115,7 @@ export default (
   done();
 };
 
-const authenticateDispatchRequest = (request: FastifyRequest, secret: string) => {
+const authenticateDispatchRequest = (request: FastifyRequest) => {
   const data = <JobDispatchRequestType>request.body;
   const { authorization } = <JobDispatchRequestHeadersType>request.headers;
 
@@ -128,7 +128,7 @@ const authenticateDispatchRequest = (request: FastifyRequest, secret: string) =>
   }
 
   const visitURLs = _.map(data.steps, "url");
-  if (!authenticateVisitToken(authorization, visitURLs, secret)) {
+  if (!authenticateVisitToken(authorization, visitURLs)) {
     return {
       statusCode: 403,
       error: "Forbidden",
@@ -142,8 +142,7 @@ const authenticateDispatchRequest = (request: FastifyRequest, secret: string) =>
 
 const authenticateStatusRequest = (
   request: FastifyRequest,
-  data: VisitJobData,
-  secret: string,
+  data: VisitJobData
 ) => {
   const { authorization } = <JobDispatchRequestHeadersType>request.headers;
 
@@ -156,7 +155,7 @@ const authenticateStatusRequest = (
   }
 
   const visitURLs = _.map(data.steps, "url");
-  if (!authenticateVisitToken(authorization, visitURLs, secret)) {
+  if (!authenticateVisitToken(authorization, visitURLs)) {
     return {
       statusCode: 403,
       error: "Forbidden",
@@ -173,8 +172,7 @@ const getAsyncJobHandler = (fastify: FastifyInstance) => {
 
     if (fastify.config.ENABLE_AUTHENTICATION) {
       const authenticationResult = authenticateDispatchRequest(
-        request,
-        fastify.config.SECRET,
+        request
       );
 
       if (authenticationResult !== true) {
@@ -193,8 +191,7 @@ const getSyncJobHandler = (fastify: FastifyInstance) => {
 
     if (fastify.config.ENABLE_AUTHENTICATION) {
       const authenticationResult = authenticateDispatchRequest(
-        request,
-        fastify.config.SECRET,
+        request
       );
 
       if (authenticationResult !== true) {
@@ -233,8 +230,7 @@ const getAsyncJobStatusHandler = (fastify: FastifyInstance) => {
     if (fastify.config.ENABLE_AUTHENTICATION) {
       const authenticationResult = authenticateStatusRequest(
         request,
-        job.data,
-        fastify.config.SECRET,
+        job.data
       );
 
       if (authenticationResult !== true) {

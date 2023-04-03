@@ -2,6 +2,7 @@ import anyTest, { TestFn } from "ava";
 import { FastifyInstance } from "fastify";
 import jwt from "jsonwebtoken";
 
+import config from "../src/config";
 import { createApp } from "../src/app";
 import { AsyncVisitQueue } from "../src/queue";
 import { getIssuerToken } from "../src/utils/auth";
@@ -17,7 +18,7 @@ import {
   timestamp,
 } from "./utils/_common";
 
-const TEST_SECRET = "keyboard-cat";
+const TEST_SECRET = config.SECRET;
 const TEST_TOKEN = jwt.sign(
   {
     scope: "https://example.com",

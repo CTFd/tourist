@@ -1,6 +1,8 @@
 import url from "url";
 import jwt from "jsonwebtoken";
 
+import config from "../config";
+
 export const getIssuerToken = (secret: string): string => {
   const payload = {
     master: true,
@@ -22,8 +24,8 @@ export const extractToken = (header: string): string | false => {
 
   return parts[1];
 };
-export const authenticateIssuerToken = (header: string, secret: string): boolean => {
-  if (secret.trim() === "") {
+export const authenticateIssuerToken = (header: string): boolean => {
+  if (config.SECRET.trim() === "") {
     return false;
   }
 
@@ -34,7 +36,7 @@ export const authenticateIssuerToken = (header: string, secret: string): boolean
 
   let payload: string | jwt.JwtPayload;
   try {
-    payload = jwt.verify(token, secret);
+    payload = jwt.verify(token, config.SECRET);
   } catch (e) {
     // token is invalid
     return false;
@@ -63,15 +65,15 @@ export const getBaseHost = (u: string): string | null => {
   if (parts.length > 2) {
     return parts.slice(parts.length - 2).join(".");
   }
+
   return hostname;
 };
 
 export const authenticateVisitToken = (
   header: string,
-  visitURLs: string[],
-  secret: string,
+  visitURLs: string[]
 ): boolean => {
-  if (secret.trim() === "") {
+  if (config.SECRET.trim() === "") {
     return false;
   }
 
@@ -82,7 +84,7 @@ export const authenticateVisitToken = (
 
   let payload: string | jwt.JwtPayload;
   try {
-    payload = jwt.verify(token, secret);
+    payload = jwt.verify(token, config.SECRET);
   } catch (e) {
     return false;
   }

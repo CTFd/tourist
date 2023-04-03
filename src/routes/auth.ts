@@ -7,6 +7,7 @@ import {
 
 import jwt from "jsonwebtoken";
 
+import config from "../config";
 import {
   IssueToken200Reply,
   IssueToken200ReplyType,
@@ -47,7 +48,7 @@ const getIssueTokenHandler = (fastify: FastifyInstance) => {
     const { authorization } = <IssueTokenRequestHeadersType>request.headers;
     const { validity, scope, strict } = <IssueTokenRequestType>request.body;
 
-    if (!authenticateIssuerToken(authorization, fastify.config.SECRET)) {
+    if (!authenticateIssuerToken(authorization)) {
       return reply.status(401).send({
         statusCode: 401,
         error: "Invalid Issuer Token",
@@ -60,7 +61,7 @@ const getIssueTokenHandler = (fastify: FastifyInstance) => {
       strict,
     };
 
-    const token = jwt.sign(payload, fastify.config.SECRET, { expiresIn: validity });
+    const token = jwt.sign(payload, config.SECRET, { expiresIn: validity });
     reply.send({ token });
   };
 };
