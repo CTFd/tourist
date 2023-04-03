@@ -75,12 +75,7 @@ test("authenticateIssuerToken returns false if token could not be extracted", as
 });
 
 test("authenticateIssuerToken returns false if token is invalid", async (t) => {
-  t.is(
-    authenticateIssuerToken(
-      `Bearer eyfpdskfds.invalid-token.sadoiadhasio`,
-    ),
-    false,
-  );
+  t.is(authenticateIssuerToken(`Bearer eyfpdskfds.invalid-token.sadoiadhasio`), false);
 });
 
 test("authenticateIssuerToken returns false if token is not an issuer token", async (t) => {
@@ -117,150 +112,102 @@ test("getBaseHost returns the base host of a given URL", async (t) => {
 
 test("authenticateVisitToken returns true if token is a valid visit token for given URLs", async (t) => {
   // non-strict token
+  t.is(authenticateVisitToken(`Bearer ${TEST_TOKEN}`, ["https://example.com"]), true);
   t.is(
-    authenticateVisitToken(
-      `Bearer ${TEST_TOKEN}`,
-      ["https://example.com"],
-    ),
+    authenticateVisitToken(`Bearer ${TEST_TOKEN}`, ["https://example.com:8443"]),
+    true,
+  );
+  t.is(authenticateVisitToken(`Bearer ${TEST_TOKEN}`, ["http://example.com"]), true);
+  t.is(
+    authenticateVisitToken(`Bearer ${TEST_TOKEN}`, ["http://example.com:8000"]),
     true,
   );
   t.is(
-    authenticateVisitToken(
-      `Bearer ${TEST_TOKEN}`,
-      ["https://example.com:8443"],
-    ),
+    authenticateVisitToken(`Bearer ${TEST_TOKEN}`, ["https://test.example.com"]),
     true,
   );
   t.is(
-    authenticateVisitToken(`Bearer ${TEST_TOKEN}`, ["http://example.com"]),
+    authenticateVisitToken(`Bearer ${TEST_TOKEN}`, ["https://test.test.example.com"]),
     true,
   );
   t.is(
-    authenticateVisitToken(
-      `Bearer ${TEST_TOKEN}`,
-      ["http://example.com:8000"],
-    ),
+    authenticateVisitToken(`Bearer ${TEST_TOKEN}`, ["https://test.example.com:8443"]),
     true,
   );
   t.is(
-    authenticateVisitToken(
-      `Bearer ${TEST_TOKEN}`,
-      ["https://test.example.com"],
-    ),
+    authenticateVisitToken(`Bearer ${TEST_TOKEN}`, [
+      "https://test.test.example.com:8443",
+    ]),
     true,
   );
   t.is(
-    authenticateVisitToken(
-      `Bearer ${TEST_TOKEN}`,
-      ["https://test.test.example.com"],
-    ),
+    authenticateVisitToken(`Bearer ${TEST_TOKEN}`, ["https://example.com/test"]),
     true,
   );
   t.is(
-    authenticateVisitToken(
-      `Bearer ${TEST_TOKEN}`,
-      ["https://test.example.com:8443"],
-    ),
+    authenticateVisitToken(`Bearer ${TEST_TOKEN}`, ["https://example.com:8443/test"]),
     true,
   );
   t.is(
-    authenticateVisitToken(
-      `Bearer ${TEST_TOKEN}`,
-      ["https://test.test.example.com:8443"],
-    ),
+    authenticateVisitToken(`Bearer ${TEST_TOKEN}`, ["https://test.example.com/test"]),
     true,
   );
   t.is(
-    authenticateVisitToken(
-      `Bearer ${TEST_TOKEN}`,
-      ["https://example.com/test"],
-    ),
+    authenticateVisitToken(`Bearer ${TEST_TOKEN}`, [
+      "https://test.example.com:8443/test",
+    ]),
     true,
   );
   t.is(
-    authenticateVisitToken(
-      `Bearer ${TEST_TOKEN}`,
-      ["https://example.com:8443/test"],
-    ),
+    authenticateVisitToken(`Bearer ${TEST_TOKEN}`, ["https://example.com?test=test"]),
     true,
   );
   t.is(
-    authenticateVisitToken(
-      `Bearer ${TEST_TOKEN}`,
-      ["https://test.example.com/test"],
-    ),
+    authenticateVisitToken(`Bearer ${TEST_TOKEN}`, [
+      "https://example.com:8443?test=test",
+    ]),
     true,
   );
   t.is(
-    authenticateVisitToken(
-      `Bearer ${TEST_TOKEN}`,
-      ["https://test.example.com:8443/test"],
-    ),
+    authenticateVisitToken(`Bearer ${TEST_TOKEN}`, [
+      "https://example.com/test?test=test",
+    ]),
     true,
   );
   t.is(
-    authenticateVisitToken(
-      `Bearer ${TEST_TOKEN}`,
-      ["https://example.com?test=test"],
-    ),
+    authenticateVisitToken(`Bearer ${TEST_TOKEN}`, [
+      "https://example.com:8443/test?test=test",
+    ]),
     true,
   );
   t.is(
-    authenticateVisitToken(
-      `Bearer ${TEST_TOKEN}`,
-      ["https://example.com:8443?test=test"],
-    ),
+    authenticateVisitToken(`Bearer ${TEST_TOKEN}`, [
+      "https://test.example.com?test=test",
+    ]),
     true,
   );
   t.is(
-    authenticateVisitToken(
-      `Bearer ${TEST_TOKEN}`,
-      ["https://example.com/test?test=test"],
-    ),
+    authenticateVisitToken(`Bearer ${TEST_TOKEN}`, [
+      "https://test.example.com:8443?test=test",
+    ]),
     true,
   );
   t.is(
-    authenticateVisitToken(
-      `Bearer ${TEST_TOKEN}`,
-      ["https://example.com:8443/test?test=test"],
-    ),
+    authenticateVisitToken(`Bearer ${TEST_TOKEN}`, [
+      "https://test.example.com/test?test=test",
+    ]),
     true,
   );
   t.is(
-    authenticateVisitToken(
-      `Bearer ${TEST_TOKEN}`,
-      ["https://test.example.com?test=test"],
-    ),
-    true,
-  );
-  t.is(
-    authenticateVisitToken(
-      `Bearer ${TEST_TOKEN}`,
-      ["https://test.example.com:8443?test=test"],
-    ),
-    true,
-  );
-  t.is(
-    authenticateVisitToken(
-      `Bearer ${TEST_TOKEN}`,
-      ["https://test.example.com/test?test=test"],
-    ),
-    true,
-  );
-  t.is(
-    authenticateVisitToken(
-      `Bearer ${TEST_TOKEN}`,
-      ["https://test.example.com:8443/test?test=test"],
-    ),
+    authenticateVisitToken(`Bearer ${TEST_TOKEN}`, [
+      "https://test.example.com:8443/test?test=test",
+    ]),
     true,
   );
 
   // strict token
   t.is(
-    authenticateVisitToken(
-      `Bearer ${TEST_STRICT_TOKEN}`,
-      ["https://example.com"],
-    ),
+    authenticateVisitToken(`Bearer ${TEST_STRICT_TOKEN}`, ["https://example.com"]),
     true,
   );
 });
@@ -269,13 +216,11 @@ test("authenticateVisitToken returns false if token could not be extracted", asy
   t.is(authenticateVisitToken(`Bearer`, ["https://example.com"]), false);
 });
 
-
 test("authenticateVisitToken returns false if token is invalid", async (t) => {
   t.is(
-    authenticateVisitToken(
-      `Bearer eyfpdskfds.invalid-token.sadoiadhasio`,
-      ["https://example.com"]
-    ),
+    authenticateVisitToken(`Bearer eyfpdskfds.invalid-token.sadoiadhasio`, [
+      "https://example.com",
+    ]),
     false,
   );
 });
@@ -283,134 +228,105 @@ test("authenticateVisitToken returns false if token is invalid", async (t) => {
 test("authenticateVisitToken returns false if token is not valid for all given URLs", async (t) => {
   // non-strict token
   t.is(
-    authenticateVisitToken(
-      `Bearer ${TEST_TOKEN}`,
-      ["https://example.com", "https://example1.com"]
-    ),
+    authenticateVisitToken(`Bearer ${TEST_TOKEN}`, [
+      "https://example.com",
+      "https://example1.com",
+    ]),
     false,
   );
   t.is(
-    authenticateVisitToken(
-      `Bearer ${TEST_TOKEN}`,
-      ["https://example.com", "http://example1.com"],
-    ),
+    authenticateVisitToken(`Bearer ${TEST_TOKEN}`, [
+      "https://example.com",
+      "http://example1.com",
+    ]),
     false,
   );
   t.is(
-    authenticateVisitToken(
-      `Bearer ${TEST_TOKEN}`,
-      ["https://test.example1.com"],
-    ),
+    authenticateVisitToken(`Bearer ${TEST_TOKEN}`, ["https://test.example1.com"]),
     false,
   );
   t.is(
-    authenticateVisitToken(
-      `Bearer ${TEST_TOKEN}`,
-      ["https://example1.com/test"],
-    ),
+    authenticateVisitToken(`Bearer ${TEST_TOKEN}`, ["https://example1.com/test"]),
     false,
   );
   t.is(
-    authenticateVisitToken(
-      `Bearer ${TEST_TOKEN}`,
-      ["https://test.example1.com/test"],
-    ),
+    authenticateVisitToken(`Bearer ${TEST_TOKEN}`, ["https://test.example1.com/test"]),
     false,
   );
   t.is(
-    authenticateVisitToken(
-      `Bearer ${TEST_TOKEN}`,
-      ["https://example1.com?test=test"],
-    ),
+    authenticateVisitToken(`Bearer ${TEST_TOKEN}`, ["https://example1.com?test=test"]),
     false,
   );
   t.is(
-    authenticateVisitToken(
-      `Bearer ${TEST_TOKEN}`,
-      ["https://example1.com/test?test=test"],
-    ),
+    authenticateVisitToken(`Bearer ${TEST_TOKEN}`, [
+      "https://example1.com/test?test=test",
+    ]),
     false,
   );
   t.is(
-    authenticateVisitToken(
-      `Bearer ${TEST_TOKEN}`,
-      ["https://test.example1.com?test=test"],
-    ),
+    authenticateVisitToken(`Bearer ${TEST_TOKEN}`, [
+      "https://test.example1.com?test=test",
+    ]),
     false,
   );
   t.is(
-    authenticateVisitToken(
-      `Bearer ${TEST_TOKEN}`,
-      ["https://test.example1.com/test?test=test"],
-    ),
+    authenticateVisitToken(`Bearer ${TEST_TOKEN}`, [
+      "https://test.example1.com/test?test=test",
+    ]),
     false,
   );
 
   // strict token
   t.is(
-    authenticateVisitToken(
-      `Bearer ${TEST_STRICT_TOKEN}`,
-      ["https://example.com", "http://example.com"],
-    ),
+    authenticateVisitToken(`Bearer ${TEST_STRICT_TOKEN}`, [
+      "https://example.com",
+      "http://example.com",
+    ]),
     false,
   );
   t.is(
-    authenticateVisitToken(
-      `Bearer ${TEST_STRICT_TOKEN}`,
-      ["https://test.example.com"],
-    ),
+    authenticateVisitToken(`Bearer ${TEST_STRICT_TOKEN}`, ["https://test.example.com"]),
     false,
   );
   t.is(
-    authenticateVisitToken(
-      `Bearer ${TEST_STRICT_TOKEN}`,
-      ["https://example.com/test"],
-    ),
+    authenticateVisitToken(`Bearer ${TEST_STRICT_TOKEN}`, ["https://example.com/test"]),
     false,
   );
   t.is(
-    authenticateVisitToken(
-      `Bearer ${TEST_STRICT_TOKEN}`,
-      ["https://test.example.com/test"],
-    ),
+    authenticateVisitToken(`Bearer ${TEST_STRICT_TOKEN}`, [
+      "https://test.example.com/test",
+    ]),
     false,
   );
   t.is(
-    authenticateVisitToken(
-      `Bearer ${TEST_STRICT_TOKEN}`,
-      ["https://example.com?test=test"],
-    ),
+    authenticateVisitToken(`Bearer ${TEST_STRICT_TOKEN}`, [
+      "https://example.com?test=test",
+    ]),
     false,
   );
   t.is(
-    authenticateVisitToken(
-      `Bearer ${TEST_STRICT_TOKEN}`,
-      ["https://example.com/test?test=test"],
-    ),
+    authenticateVisitToken(`Bearer ${TEST_STRICT_TOKEN}`, [
+      "https://example.com/test?test=test",
+    ]),
     false,
   );
   t.is(
-    authenticateVisitToken(
-      `Bearer ${TEST_STRICT_TOKEN}`,
-      ["https://test.example.com?test=test"],
-    ),
+    authenticateVisitToken(`Bearer ${TEST_STRICT_TOKEN}`, [
+      "https://test.example.com?test=test",
+    ]),
     false,
   );
   t.is(
-    authenticateVisitToken(
-      `Bearer ${TEST_STRICT_TOKEN}`,
-      ["https://test.example.com/test?test=test"],
-    ),
+    authenticateVisitToken(`Bearer ${TEST_STRICT_TOKEN}`, [
+      "https://test.example.com/test?test=test",
+    ]),
     false,
   );
 });
 
 test("authenticateVisitToken returns false if token is expired", async (t) => {
   t.is(
-    authenticateVisitToken(
-      `Bearer ${TEST_EXPIRED_TOKEN}`,
-      ["https://example.com"],
-    ),
+    authenticateVisitToken(`Bearer ${TEST_EXPIRED_TOKEN}`, ["https://example.com"]),
     false,
   );
 });

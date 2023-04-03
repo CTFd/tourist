@@ -140,10 +140,7 @@ const authenticateDispatchRequest = (request: FastifyRequest) => {
   return true;
 };
 
-const authenticateStatusRequest = (
-  request: FastifyRequest,
-  data: VisitJobData
-) => {
+const authenticateStatusRequest = (request: FastifyRequest, data: VisitJobData) => {
   const { authorization } = <JobDispatchRequestHeadersType>request.headers;
 
   if (!authorization) {
@@ -171,9 +168,7 @@ const getAsyncJobHandler = (fastify: FastifyInstance) => {
     const data = <JobDispatchRequestType>request.body;
 
     if (fastify.config.ENABLE_AUTHENTICATION) {
-      const authenticationResult = authenticateDispatchRequest(
-        request
-      );
+      const authenticationResult = authenticateDispatchRequest(request);
 
       if (authenticationResult !== true) {
         return reply.status(authenticationResult.statusCode).send(authenticationResult);
@@ -190,9 +185,7 @@ const getSyncJobHandler = (fastify: FastifyInstance) => {
     const data = <JobDispatchRequestType>request.body;
 
     if (fastify.config.ENABLE_AUTHENTICATION) {
-      const authenticationResult = authenticateDispatchRequest(
-        request
-      );
+      const authenticationResult = authenticateDispatchRequest(request);
 
       if (authenticationResult !== true) {
         return reply.status(authenticationResult.statusCode).send(authenticationResult);
@@ -228,10 +221,7 @@ const getAsyncJobStatusHandler = (fastify: FastifyInstance) => {
     }
 
     if (fastify.config.ENABLE_AUTHENTICATION) {
-      const authenticationResult = authenticateStatusRequest(
-        request,
-        job.data
-      );
+      const authenticationResult = authenticateStatusRequest(request, job.data);
 
       if (authenticationResult !== true) {
         return reply.status(authenticationResult.statusCode).send(authenticationResult);

@@ -71,7 +71,7 @@ export const getBaseHost = (u: string): string | null => {
 
 export const authenticateVisitToken = (
   header: string,
-  visitURLs: string[]
+  visitURLs: string[],
 ): boolean => {
   if (config.SECRET.trim() === "") {
     return false;
