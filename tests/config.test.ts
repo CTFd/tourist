@@ -14,4 +14,5 @@ test("config has correct default values", async (t) => {
   t.is(config.ENABLE_LEGACY_API, false);
   t.is(config.ENABLE_AUTHENTICATION, true);
   t.is(config.SENTRY_DSN, false);
+  t.is(config.SENTRY_TRACES_SAMPLE, 0.0);
 });

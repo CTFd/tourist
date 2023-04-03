@@ -14,7 +14,7 @@ export default (app: FastifyInstance) => {
   Sentry.init({
     // @ts-ignore: SENTRY_DSN has to be defined for this to load
     dsn: app.config.SENTRY_DSN,
-    tracesSampleRate: 1.0,
+    tracesSampleRate: app.config.SENTRY_TRACES_SAMPLE,
     integrations: [
       new RewriteFrames({
         root: global.__rootdir__,

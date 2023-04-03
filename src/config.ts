@@ -17,6 +17,7 @@ export declare type TouristConfig = {
   ENABLE_LEGACY_API: boolean;
   ENABLE_AUTHENTICATION: boolean;
   SENTRY_DSN: string | false;
+  SENTRY_TRACES_SAMPLE: number;
 };
 
 if (process.env.NODE_ENV !== "test") {
@@ -43,6 +44,10 @@ const getConfig = () =>
       process.env.SENTRY_DSN && process.env.SENTRY_DSN !== ""
         ? process.env.SENTRY_DSN
         : false,
+    SENTRY_TRACES_SAMPLE:
+      process.env.SENTRY_TRACES_SAMPLE && process.env.SENTRY_TRACES_SAMPLE !== ""
+        ? parseFloat(process.env.SENTRY_TRACES_SAMPLE)
+        : 0.0,
   } as TouristConfig);
 
 export default _.memoize(getConfig)();

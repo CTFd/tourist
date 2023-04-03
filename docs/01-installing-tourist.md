@@ -88,6 +88,8 @@ like [pm2](https://pm2.keymetrics.io/) or with a systemd service.
 | PORT                  | 3000                    | Port on the host address that tourist will listen on.          |
 | ENABLE_LEGACY_API     | false                   | Whether to enable legacy portion of the API (not recommended). |
 | ENABLE_AUTHENTICATION | true                    | Whether to enable authentication with tokens (recommended).    |
+| SENTRY_DSN            | undefined (disabled)    | <https://docs.sentry.io/product/sentry-basics/dsn-explainer/>    |
+| SENTRY_TRACES_SAMPLE  | 0.0                     | <https://develop.sentry.dev/sdk/performance/#tracessamplerate>   |
 
 #### Note on concurrency
 
