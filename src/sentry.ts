@@ -3,6 +3,13 @@ import { FastifyInstance } from "fastify";
 import * as Sentry from "@sentry/node";
 import { RewriteFrames } from "@sentry/integrations";
 
+// Sentry Typescript Integration: https://docs.sentry.io/platforms/node/typescript/
+global.__rootdir__ = __dirname || process.cwd();
+
+declare global {
+  var __rootdir__: string;
+}
+
 export default (app: FastifyInstance) => {
   Sentry.init({
     // @ts-ignore: SENTRY_DSN has to be defined for this to load
