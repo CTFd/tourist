@@ -30,7 +30,6 @@ export class PlaywrightRunner {
   public readonly steps: JobStepType[];
   public readonly cookies: JobCookieType[];
   public options: JobOptions[] = [];
-  private _actionContext: Array<any> = [];
   private readonly _debug: boolean;
 
   constructor(data: PlaywrightRunnerData, debug: boolean = false) {
@@ -111,10 +110,9 @@ export class PlaywrightRunner {
         wasm: false,
       });
 
-      const { page, context, _actionContext } = this;
+      const { page, context } = this;
       vm.freeze(page, "page");
       vm.freeze(context, "context");
-      vm.freeze(_actionContext, "actions");
 
       if (this._debug) {
         vm.freeze(console, "console");
@@ -124,8 +122,7 @@ export class PlaywrightRunner {
       if (step.actions && actions.preOpen) {
         for (const preOpenAction of actions.preOpen) {
           try {
-            const idx = step.actions.indexOf(preOpenAction);
-            this._actionContext[idx] = await vm.run(preOpenAction);
+            await vm.run(preOpenAction);
           } catch (e: any) {
             const msg = e.message ? ` - ${e.message}` : "";
             await this.teardown();
@@ -141,8 +138,7 @@ export class PlaywrightRunner {
       if (step.actions && actions.postOpen) {
         for (const postOpenAction of actions.postOpen) {
           try {
-            const idx = step.actions.indexOf(postOpenAction);
-            this._actionContext[idx] = await vm.run(postOpenAction);
+            await vm.run(postOpenAction);
             await this.page.waitForLoadState();
           } catch (e: any) {
             const msg = e.message ? ` - ${e.message}` : "";
@@ -193,8 +189,6 @@ export class PlaywrightRunner {
 
   // teardown() removes the browser and context from the instance as well as closes them
   public async teardown() {
-    this._actionContext = [];
-
     if (this.context) {
       await this.context.close();
       delete this.context;
@@ -206,10 +200,5 @@ export class PlaywrightRunner {
       delete this.browser;
       this.browser = undefined;
     }
-  }
-
-  // helper getter for the private _actionContext for peeking at the context during tests
-  get actionContext() {
-    return this._actionContext;
   }
 }
