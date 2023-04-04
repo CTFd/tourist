@@ -1,3 +1,5 @@
+import util from "util";
+
 import {
   FastifyInstance,
   FastifyPluginOptions,
@@ -197,7 +199,9 @@ const getSyncJobHandler = (fastify: FastifyInstance) => {
       return reply.send({ status: "success", result: jobResult });
     } catch (e: any) {
       if (fastify.config.SENTRY_DSN) {
-        Sentry.captureException(e);
+        Sentry.captureException(e, {
+          extra: { "Request Body": util.inspect(data, { depth: 5 }) },
+        });
       }
 
       return reply

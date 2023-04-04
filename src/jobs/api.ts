@@ -1,3 +1,5 @@
+import util from "util";
+
 import { Job } from "bull";
 import * as Sentry from "@sentry/node";
 
@@ -22,7 +24,9 @@ export const asyncVisitJob = async (job: Job<VisitJobData>) => {
     await runner.exec();
   } catch (e: any) {
     if (config.SENTRY_DSN) {
-      Sentry.captureException(e);
+      Sentry.captureException(e, {
+        extra: { "Request Body": util.inspect(data, { depth: 5 }) },
+      });
     }
 
     // change the job status to failed with the error message
