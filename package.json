@@ -39,7 +39,7 @@
     "lodash": "^4.17.21",
     "pino-pretty": "^9.1.1",
     "playwright": "^1.31.1",
-    "vm2": "^3.9.13"
+    "vm2": "^3.9.15"
   },
   "devDependencies": {
     "@fastify/formbody": "^7.4.0",
