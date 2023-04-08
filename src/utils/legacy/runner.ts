@@ -2,7 +2,7 @@ import { PlaywrightRunner, PlaywrightRunnerData } from "../runner";
 import { LegacyCookieType, LegacyStepType } from "../../schemas/legacy";
 import { JobBrowser, JobOptions } from "../../schemas/api";
 
-export declare type LegacyPlaywrightRunnerData = {
+export type LegacyPlaywrightRunnerData = {
   steps: LegacyStepType[];
   cookies: LegacyCookieType[];
   record: boolean;

@@ -65,6 +65,25 @@ test("POST '/api/v1/sync-job' performs jobs without any results", async (t) => {
   t.deepEqual(response.json(), { status: "success", result: {} });
 });
 
+test("POST '/api/v1/sync-job' records video", async (t) => {
+  const { app, testAppURL } = t.context;
+
+  const response = await app.inject({
+    method: "POST",
+    url: "/api/v1/sync-job",
+    payload: {
+      steps: [{ url: testAppURL, actions: ["page.waitForTimeout(1000)"] }],
+      options: [JobOptions.RECORD],
+    },
+  });
+
+  const body = response.json();
+  t.is(response.statusCode, 200);
+  t.assert(body.hasOwnProperty("result"));
+  t.assert(body.result.hasOwnProperty("video"));
+  t.is(base64regex.test(body.result.video), true);
+});
+
 test("POST '/api/v1/sync-job' creates pdf", async (t) => {
   const { app, testAppURL } = t.context;
 
@@ -114,7 +133,7 @@ test("POST '/api/v1/sync-job' creates all of pdf, screenshot, video", async (t) 
     method: "POST",
     url: "/api/v1/sync-job",
     payload: {
-      steps: [{ url: testAppURL }],
+      steps: [{ url: testAppURL, actions: ["page.waitForTimeout(1000)"] }],
       options: [JobOptions.SCREENSHOT, JobOptions.PDF, JobOptions.RECORD],
     },
   });

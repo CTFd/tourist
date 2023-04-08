@@ -17,30 +17,20 @@ import {
   JobResultType,
   AsyncJob200Reply,
   AsyncJob200ReplyType,
-  AsyncJob400Reply,
-  AsyncJob400ReplyType,
   AsyncJobStatusRequest,
   AsyncJobStatusRequestType,
   AsyncJobStatus200Reply,
   AsyncJobStatus200ReplyType,
-  AsyncJobStatus404Reply,
-  AsyncJobStatus404ReplyType,
   SyncJob200Reply,
   SyncJob200ReplyType,
-  SyncJob400Reply,
-  SyncJob400ReplyType,
-  AsyncJob401Reply,
-  AsyncJob403Reply,
-  SyncJob401Reply,
-  SyncJob403Reply,
-  SyncJob401ReplyType,
-  SyncJob403ReplyType,
-  AsyncJob403ReplyType,
-  AsyncJob401ReplyType,
-  AsyncJobStatus401Reply,
-  AsyncJobStatus403Reply,
-  AsyncJobStatus401ReplyType,
-  AsyncJobStatus403ReplyType,
+  JobOperation400Reply,
+  JobOperation400ReplyType,
+  JobOperation401Reply,
+  JobOperation401ReplyType,
+  JobOperation403Reply,
+  JobOperation403ReplyType,
+  JobOperation404Reply,
+  JobOperation404ReplyType,
 } from "../schemas/api";
 import { AsyncVisitQueue } from "../queue";
 import { syncVisitJob, VisitJobData } from "../jobs/api";
@@ -54,20 +44,15 @@ export default (
   fastify.post<{
     Headers: JobDispatchRequestHeadersType;
     Body: JobDispatchRequestType;
-    Reply:
-      | AsyncJob200ReplyType
-      | AsyncJob400ReplyType
-      | AsyncJob401ReplyType
-      | AsyncJob403ReplyType;
+    Reply: AsyncJob200ReplyType | JobOperation401ReplyType | JobOperation403ReplyType;
   }>("/async-job", {
     schema: {
       headers: JobDispatchRequestHeaders,
       body: JobDispatchRequest,
       response: {
         200: AsyncJob200Reply,
-        400: AsyncJob400Reply,
-        401: AsyncJob401Reply,
-        403: AsyncJob403Reply,
+        401: JobOperation401Reply,
+        403: JobOperation403Reply,
       },
     },
     handler: getAsyncJobHandler(fastify),
@@ -78,17 +63,17 @@ export default (
     Body: JobDispatchRequestType;
     Reply:
       | SyncJob200ReplyType
-      | SyncJob400ReplyType
-      | SyncJob401ReplyType
-      | SyncJob403ReplyType;
+      | JobOperation400ReplyType
+      | JobOperation401ReplyType
+      | JobOperation403ReplyType;
   }>("/sync-job", {
     schema: {
       body: JobDispatchRequest,
       response: {
         200: SyncJob200Reply,
-        400: SyncJob400Reply,
-        401: SyncJob401Reply,
-        403: SyncJob403Reply,
+        400: JobOperation400Reply,
+        401: JobOperation401Reply,
+        403: JobOperation403Reply,
       },
     },
     handler: getSyncJobHandler(fastify),
@@ -98,17 +83,17 @@ export default (
     Querystring: AsyncJobStatusRequestType;
     Reply:
       | AsyncJobStatus200ReplyType
-      | AsyncJobStatus401ReplyType
-      | AsyncJobStatus403ReplyType
-      | AsyncJobStatus404ReplyType;
+      | JobOperation401ReplyType
+      | JobOperation403ReplyType
+      | JobOperation404ReplyType;
   }>("/job-status", {
     schema: {
       querystring: AsyncJobStatusRequest,
       response: {
         200: AsyncJobStatus200Reply,
-        401: AsyncJobStatus401Reply,
-        403: AsyncJobStatus403Reply,
-        404: AsyncJobStatus404Reply,
+        401: JobOperation401Reply,
+        403: JobOperation403Reply,
+        404: JobOperation404Reply,
       },
     },
     handler: getAsyncJobStatusHandler(fastify),
@@ -117,7 +102,9 @@ export default (
   done();
 };
 
-const authenticateDispatchRequest = (request: FastifyRequest) => {
+const authenticateDispatchRequest = (
+  request: FastifyRequest,
+): true | JobOperation401ReplyType | JobOperation403ReplyType => {
   const data = <JobDispatchRequestType>request.body;
   const { authorization } = <JobDispatchRequestHeadersType>request.headers;
 
@@ -129,7 +116,7 @@ const authenticateDispatchRequest = (request: FastifyRequest) => {
     };
   }
 
-  const visitURLs = _.map(data.steps, "url");
+  const visitURLs: string[] = _.map(data.steps, "url");
   if (!authenticateVisitToken(authorization, visitURLs)) {
     return {
       statusCode: 403,
@@ -142,7 +129,10 @@ const authenticateDispatchRequest = (request: FastifyRequest) => {
   return true;
 };
 
-const authenticateStatusRequest = (request: FastifyRequest, data: VisitJobData) => {
+const authenticateStatusRequest = (
+  request: FastifyRequest,
+  data: VisitJobData,
+): true | JobOperation401ReplyType | JobOperation403ReplyType => {
   const { authorization } = <JobDispatchRequestHeadersType>request.headers;
 
   if (!authorization) {
@@ -153,7 +143,7 @@ const authenticateStatusRequest = (request: FastifyRequest, data: VisitJobData) 
     };
   }
 
-  const visitURLs = _.map(data.steps, "url");
+  const visitURLs: string[] = _.map(data.steps, "url");
   if (!authenticateVisitToken(authorization, visitURLs)) {
     return {
       statusCode: 403,
