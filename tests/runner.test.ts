@@ -838,3 +838,29 @@ test("PlaywrightRunner closes the browser if an error occurs", async (t) => {
 
   t.assert(runner_2.browser === undefined);
 });
+
+test("PlaywrightRunner closes the browser if page fails to connect", async (t) => {
+  const runner = new PlaywrightRunner({
+    browser: JobBrowser.CHROMIUM,
+    steps: [
+      {
+        url: `http://nonexistent/`,
+      },
+    ],
+    cookies: [],
+    options: [],
+  });
+
+  await t.throwsAsync(
+    async () => {
+      await runner.init();
+      await runner.exec();
+      await runner.finish();
+    },
+    {
+      message: `[runtime] failed navigating to URL: 'http://nonexistent/'`,
+    },
+  );
+
+  t.assert(runner.browser === undefined);
+});
