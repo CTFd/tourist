@@ -13,6 +13,10 @@ type RecordingRequest = FastifyRequest<{
   Querystring: { id: string };
 }>;
 
+type RedirectRequest = FastifyRequest<{
+  Querystring: { id: string; to: string };
+}>;
+
 type FormRecordingRequest = FastifyRequest<{
   Body: { fillme: string; checkme: string; id: string };
 }>;
@@ -117,6 +121,61 @@ export const startTestApp = async (
   app.get("/inspect-form", (request: RecordingRequest, reply) => {
     const { id } = request.query;
     reply.type("application/json").send(forms[id]);
+  });
+
+  // testing redirects with window.location
+  app.get("/redirect", (request: RedirectRequest, reply) => {
+    let { id, to } = request.query;
+
+    if (!to) {
+      return reply.status(400).send("Invalid redirection URL");
+    }
+
+    let payload: string = "";
+    if (to.startsWith("http")) {
+      let url = new URL(to);
+      url.searchParams.set("id", id);
+      payload = `<script>window.location='${url.href}'</script>`;
+    }
+
+    if (to.startsWith("/")) {
+      let url = new URL(`http://localhost${to}`);
+      url.searchParams.set("id", id);
+      payload = `<script>window.location='${url.pathname}?${url.searchParams}'</script>`;
+    }
+
+    if (!payload) {
+      return reply.status(400).send("Invalid redirection URL");
+    }
+
+    reply.type("text/html").send(payload);
+  });
+
+  app.get("/popup", (request: RedirectRequest, reply) => {
+    let { id, to } = request.query;
+
+    if (!to) {
+      return reply.status(400).send("Invalid popup URL");
+    }
+
+    let payload: string = "";
+    if (to.startsWith("http")) {
+      let url = new URL(to);
+      url.searchParams.set("id", id);
+      payload = `<script>window.open('${url.href}', "_blank")</script>`;
+    }
+
+    if (to.startsWith("/")) {
+      let url = new URL(`http://localhost${to}`);
+      url.searchParams.set("id", id);
+      payload = `<script>window.open('${url.pathname}?${url.searchParams}', "_blank")</script>`;
+    }
+
+    if (!payload) {
+      return reply.status(400).send("Invalid redirection URL");
+    }
+
+    reply.type("text/html").send(payload);
   });
 
   // testing alerts

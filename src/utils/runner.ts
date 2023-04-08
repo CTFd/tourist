@@ -26,10 +26,12 @@ export class PlaywrightRunner {
   public context?: BrowserContext;
   public page?: Page;
 
+  public options: JobOptions[] = [];
   public readonly browserKind: JobBrowser;
   public readonly steps: JobStepType[];
   public readonly cookies: JobCookieType[];
-  public options: JobOptions[] = [];
+
+  private _dialogMessages: string[] = [];
   private readonly _debug: boolean;
 
   constructor(data: PlaywrightRunnerData, debug: boolean = false) {
@@ -43,7 +45,14 @@ export class PlaywrightRunner {
   // init() initializes playwright: browser, context and page
   // it is intentionally separated from exec to allow for modifying playwright
   public async init() {
-    const launchOptions: LaunchOptions = {};
+    const launchOptions: LaunchOptions = {
+      // adding minimal slowMo resolves all sorts of issues regarding waiting for js
+      // execution or load state - without requiring to always wait for networkidle.
+      // it's an intentional trade-off - as it's better to always wait 50ms longer
+      // than to have to wait for networkidle state which may lead to stalling.
+      slowMo: 50,
+    };
+
     if (this._debug) {
       launchOptions.slowMo = 1000;
       launchOptions.headless = false;
@@ -104,7 +113,7 @@ export class PlaywrightRunner {
         );
       }
 
-      // provide the page object to the isolated context
+      // provide the page & context objects to the isolated context
       const vm = new VM({
         eval: false,
         wasm: false,
@@ -131,8 +140,48 @@ export class PlaywrightRunner {
         }
       }
 
-      await this.page.goto(step.url);
-      await this.page.waitForLoadState();
+      // register handlers required for reading alerts
+      // they will overwrite any user-provided context.on("page") as well as
+      // page.on("dialog") handlers, which is intended
+      if (this.options.includes(JobOptions.READ_ALERTS)) {
+        // handler for reading alerts
+        const onDialog = async (dialog: playwright.Dialog) => {
+          // only read text from alerts - skip confirms, prompts and beforeunload
+          if (dialog.type() === "alert") {
+            try {
+              const msg = dialog.message();
+              await dialog.dismiss();
+
+              // only push the value if dialog hasn't been handled (dismiss doesn't throw an error)
+              this._dialogMessages.push(msg);
+            } catch (e: any) {
+              // playwright will throw an error if dialog has already been handled
+            }
+          }
+        };
+
+        // add listener for current page
+        this.page.on("dialog", onDialog);
+
+        // add listener for possible new pages / popups
+        this.context.on("page", async (page: playwright.Page) => {
+          page.on("dialog", onDialog);
+
+          // auto-close new pages after they reach load state.
+          // control over this can't be provided to the user because
+          // READ_ALERTS option needs to overwrite any handlers for new pages.
+          await page.waitForLoadState();
+          await page.close();
+        });
+      }
+
+      try {
+        await this.page.goto(step.url);
+        await this.page.waitForLoadState();
+      } catch (e) {
+        await this.teardown();
+        throw new Error(`[runtime] failed navigating to URL: '${step.url}'`);
+      }
 
       // run all post-open actions for this step
       if (step.actions && actions.postOpen) {
@@ -159,6 +208,10 @@ export class PlaywrightRunner {
     }
 
     const result: JobResultType = {};
+
+    if (this.options.includes(JobOptions.READ_ALERTS)) {
+      result.messages = [...this._dialogMessages];
+    }
 
     if (this.options.includes(JobOptions.SCREENSHOT)) {
       const screenshotBuffer = await this.page!.screenshot({ fullPage: true });

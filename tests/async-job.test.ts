@@ -167,6 +167,127 @@ test("POST '/api/v1/async-job' creates screenshot", async (t) => {
   t.assert(result.result.hasOwnProperty("screenshot"));
   t.is(base64regex.test(result.result.screenshot), true);
 });
+
+test("POST '/api/v1/async-job' reads alerts", async (t) => {
+  const { app, testAppURL } = t.context;
+
+  const response = await app.inject({
+    method: "POST",
+    url: "/api/v1/async-job",
+    payload: {
+      steps: [{ url: `${testAppURL}/alert` }],
+      options: [JobOptions.READ_ALERTS],
+    },
+  });
+
+  t.is(response.statusCode, 200);
+  const data = response.json();
+  t.assert(data.hasOwnProperty("status"));
+  t.assert(data.hasOwnProperty("id"));
+  t.is(data.status, "scheduled");
+  t.assert(typeof data.id === "number");
+
+  const result = await asyncJobResult(app, data.id);
+  t.assert(result.hasOwnProperty("status"));
+  t.is(result.status, "success");
+
+  t.assert(result.hasOwnProperty("result"));
+  t.assert(result.result.hasOwnProperty("messages"));
+  t.deepEqual(result.result.messages, ["1"]);
+});
+
+test("POST '/api/v1/async-job' reads multiple alerts", async (t) => {
+  const { app, testAppURL } = t.context;
+
+  const response = await app.inject({
+    method: "POST",
+    url: "/api/v1/async-job",
+    payload: {
+      steps: [
+        { url: `${testAppURL}/alert` },
+        { url: `${testAppURL}/alert` },
+        { url: `${testAppURL}/alert` },
+      ],
+      options: [JobOptions.READ_ALERTS],
+    },
+  });
+
+  t.is(response.statusCode, 200);
+  const data = response.json();
+  t.assert(data.hasOwnProperty("status"));
+  t.assert(data.hasOwnProperty("id"));
+  t.is(data.status, "scheduled");
+  t.assert(typeof data.id === "number");
+
+  const result = await asyncJobResult(app, data.id);
+  t.assert(result.hasOwnProperty("status"));
+  t.is(result.status, "success");
+
+  t.assert(result.hasOwnProperty("result"));
+  t.assert(result.result.hasOwnProperty("messages"));
+  t.deepEqual(result.result.messages, ["1", "1", "1"]);
+});
+
+test("POST '/api/v1/async-job' reads alerts from popup windows", async (t) => {
+  const { app, testAppURL } = t.context;
+
+  const response = await app.inject({
+    method: "POST",
+    url: "/api/v1/async-job",
+    payload: {
+      steps: [{ url: `${testAppURL}/popup?to=/alert` }],
+      options: [JobOptions.READ_ALERTS],
+    },
+  });
+
+  t.is(response.statusCode, 200);
+  const data = response.json();
+  t.assert(data.hasOwnProperty("status"));
+  t.assert(data.hasOwnProperty("id"));
+  t.is(data.status, "scheduled");
+  t.assert(typeof data.id === "number");
+
+  const result = await asyncJobResult(app, data.id);
+  t.assert(result.hasOwnProperty("status"));
+  t.is(result.status, "success");
+
+  t.assert(result.hasOwnProperty("result"));
+  t.assert(result.result.hasOwnProperty("messages"));
+  t.deepEqual(result.result.messages, ["1"]);
+});
+
+test("POST '/api/v1/async-job' reads multiple alerts from popup windows", async (t) => {
+  const { app, testAppURL } = t.context;
+
+  const response = await app.inject({
+    method: "POST",
+    url: "/api/v1/async-job",
+    payload: {
+      steps: [
+        { url: `${testAppURL}/popup?to=/alert` },
+        { url: `${testAppURL}/popup?to=/alert` },
+        { url: `${testAppURL}/popup?to=/alert` },
+      ],
+      options: [JobOptions.READ_ALERTS],
+    },
+  });
+
+  t.is(response.statusCode, 200);
+  const data = response.json();
+  t.assert(data.hasOwnProperty("status"));
+  t.assert(data.hasOwnProperty("id"));
+  t.is(data.status, "scheduled");
+  t.assert(typeof data.id === "number");
+
+  const result = await asyncJobResult(app, data.id);
+  t.assert(result.hasOwnProperty("status"));
+  t.is(result.status, "success");
+
+  t.assert(result.hasOwnProperty("result"));
+  t.assert(result.result.hasOwnProperty("messages"));
+  t.deepEqual(result.result.messages, ["1", "1", "1"]);
+});
+
 test("POST '/api/v1/async-job' creates all of pdf, screenshot, video", async (t) => {
   const { app, testAppURL } = t.context;
 

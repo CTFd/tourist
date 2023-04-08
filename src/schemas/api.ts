@@ -8,6 +8,7 @@ export enum JobOptions {
   RECORD = "RECORD",
   SCREENSHOT = "SCREENSHOT",
   PDF = "PDF",
+  READ_ALERTS = "READ_ALERTS",
 }
 
 export enum CookieSameSite {
@@ -46,6 +47,7 @@ export const JobResult = Type.Object({
   screenshot: Type.Optional(Type.String()),
   video: Type.Optional(Type.String()),
   pdf: Type.Optional(Type.String()),
+  messages: Type.Optional(Type.Array(Type.String())),
 });
 
 export type JobResultType = Static<typeof JobResult>;
