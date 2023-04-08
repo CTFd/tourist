@@ -48,9 +48,9 @@ export class PlaywrightRunner {
     const launchOptions: LaunchOptions = {
       // adding minimal slowMo resolves all sorts of issues regarding waiting for js
       // execution or load state - without requiring to always wait for networkidle.
-      // it's an intentional trade-off - as it's better to always wait 30ms longer
+      // it's an intentional trade-off - as it's better to always wait 50ms longer
       // than to have to wait for networkidle state which may lead to stalling.
-      slowMo: 30,
+      slowMo: 50,
     };
 
     if (this._debug) {
