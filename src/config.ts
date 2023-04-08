@@ -6,7 +6,7 @@ import crypto from "crypto";
 import _ from "lodash";
 import { parseBool } from "./utils/config";
 
-export declare type TouristConfig = {
+export type TouristConfig = {
   DEBUG: boolean;
   CONCURRENCY: number;
   SECRET: string;

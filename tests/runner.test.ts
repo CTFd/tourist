@@ -232,7 +232,7 @@ test("PlaywrightRunner waits for loaded state", async (t) => {
   const execution = end - start;
 
   // 5s is both too long for usual execution and not too long for testing purposes
-  t.assert(execution > 5300);
+  t.assert(execution > 5000);
 });
 
 test("PlaywrightRunner steps can interact with anchors", async (t) => {

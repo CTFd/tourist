@@ -2,8 +2,9 @@ import { Job } from "bull";
 
 import { LegacyCookieType, LegacyStepType } from "../schemas/legacy";
 import { LegacyPlaywrightRunner } from "../utils/legacy/runner";
+import { JobResultType } from "../schemas/api";
 
-export declare type LegacySimpleVisitJobData = {
+export type LegacySimpleVisitJobData = {
   steps: LegacyStepType[];
   cookies: LegacyCookieType[];
 };
@@ -27,7 +28,7 @@ export const legacySimpleVisitJob = async (job: Job<LegacySimpleVisitJobData>) =
   }
 };
 
-export declare type LegacyReturningVisitJobData = {
+export type LegacyReturningVisitJobData = {
   steps: LegacyStepType[];
   cookies: LegacyCookieType[];
   record: boolean;
@@ -49,6 +50,6 @@ export const legacyReturningVisitJob = async (data: LegacyReturningVisitJobData)
     throw e;
   }
 
-  const result = await runner.finish();
+  const result: JobResultType = await runner.finish();
   return { status: "success", result };
 };

@@ -84,6 +84,34 @@ test("POST '/api/v1/async-job' performs jobs without any results", async (t) => 
   t.deepEqual(result.result, {});
 });
 
+test("POST '/api/v1/async-job' records video", async (t) => {
+  const { app, testAppURL } = t.context;
+
+  const response = await app.inject({
+    method: "POST",
+    url: "/api/v1/async-job",
+    payload: {
+      steps: [{ url: testAppURL, actions: ["page.waitForTimeout(1000)"] }],
+      options: [JobOptions.RECORD],
+    },
+  });
+
+  t.is(response.statusCode, 200);
+  const data = response.json();
+  t.assert(data.hasOwnProperty("status"));
+  t.assert(data.hasOwnProperty("id"));
+  t.is(data.status, "scheduled");
+  t.assert(typeof data.id === "number");
+
+  const result = await asyncJobResult(app, data.id);
+  t.assert(result.hasOwnProperty("status"));
+  t.is(result.status, "success");
+
+  t.assert(result.hasOwnProperty("result"));
+  t.assert(result.result.hasOwnProperty("video"));
+  t.is(base64regex.test(result.result.video), true);
+});
+
 test("POST '/api/v1/async-job' creates pdf", async (t) => {
   const { app, testAppURL } = t.context;
 
@@ -146,7 +174,7 @@ test("POST '/api/v1/async-job' creates all of pdf, screenshot, video", async (t)
     method: "POST",
     url: "/api/v1/async-job",
     payload: {
-      steps: [{ url: testAppURL }],
+      steps: [{ url: testAppURL, actions: ["page.waitForTimeout(1000)"] }],
       options: [JobOptions.SCREENSHOT, JobOptions.PDF, JobOptions.RECORD],
     },
   });

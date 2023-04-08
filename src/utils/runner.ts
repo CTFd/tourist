@@ -13,7 +13,7 @@ import {
   JobStepType,
 } from "../schemas/api";
 
-export declare type PlaywrightRunnerData = {
+export type PlaywrightRunnerData = {
   browser: JobBrowser;
   steps: JobStepType[];
   cookies: JobCookieType[];

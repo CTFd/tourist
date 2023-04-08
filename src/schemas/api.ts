@@ -68,6 +68,38 @@ export const JobDispatchRequest = Type.Object(
 
 export type JobDispatchRequestType = Static<typeof JobDispatchRequest>;
 
+export const JobOperation400Reply = Type.Object({
+  statusCode: Type.Literal(400),
+  error: Type.String(),
+  message: Type.String(),
+});
+
+export type JobOperation400ReplyType = Static<typeof JobOperation400Reply>;
+
+export const JobOperation401Reply = Type.Object({
+  statusCode: Type.Literal(401),
+  error: Type.String(),
+  message: Type.String(),
+});
+
+export type JobOperation401ReplyType = Static<typeof JobOperation401Reply>;
+
+export const JobOperation403Reply = Type.Object({
+  statusCode: Type.Literal(403),
+  error: Type.String(),
+  message: Type.String(),
+});
+
+export type JobOperation403ReplyType = Static<typeof JobOperation403Reply>;
+
+export const JobOperation404Reply = Type.Object({
+  statusCode: Type.Literal(404),
+  message: Type.String(),
+  error: Type.String(),
+});
+
+export type JobOperation404ReplyType = Static<typeof JobOperation404Reply>;
+
 export const SyncJob200Reply = Type.Object({
   status: Type.Union([Type.Literal("success"), Type.Literal("failed")]),
   result: Type.Optional(JobResult),
@@ -75,60 +107,12 @@ export const SyncJob200Reply = Type.Object({
 
 export type SyncJob200ReplyType = Static<typeof SyncJob200Reply>;
 
-export const SyncJob400Reply = Type.Object({
-  statusCode: Type.Literal(400),
-  error: Type.String(),
-  message: Type.String(),
-});
-
-export type SyncJob400ReplyType = Static<typeof SyncJob400Reply>;
-
-export const SyncJob401Reply = Type.Object({
-  statusCode: Type.Literal(401),
-  error: Type.String(),
-  message: Type.String(),
-});
-
-export type SyncJob401ReplyType = Static<typeof SyncJob401Reply>;
-
-export const SyncJob403Reply = Type.Object({
-  statusCode: Type.Literal(403),
-  error: Type.String(),
-  message: Type.String(),
-});
-
-export type SyncJob403ReplyType = Static<typeof SyncJob403Reply>;
-
 export const AsyncJob200Reply = Type.Object({
   status: Type.Literal("scheduled"),
   id: Type.Number({ minimum: 1 }),
 });
 
 export type AsyncJob200ReplyType = Static<typeof AsyncJob200Reply>;
-
-export const AsyncJob400Reply = Type.Object({
-  statusCode: Type.Literal(400),
-  error: Type.String(),
-  message: Type.String(),
-});
-
-export type AsyncJob400ReplyType = Static<typeof AsyncJob400Reply>;
-
-export const AsyncJob401Reply = Type.Object({
-  statusCode: Type.Literal(401),
-  error: Type.String(),
-  message: Type.String(),
-});
-
-export type AsyncJob401ReplyType = Static<typeof AsyncJob401Reply>;
-
-export const AsyncJob403Reply = Type.Object({
-  statusCode: Type.Literal(403),
-  error: Type.String(),
-  message: Type.String(),
-});
-
-export type AsyncJob403ReplyType = Static<typeof AsyncJob403Reply>;
 
 export const AsyncJobStatusRequest = Type.Object({
   id: Type.Number({ minimum: 1 }),
@@ -146,27 +130,3 @@ export const AsyncJobStatus200Reply = Type.Object({
 });
 
 export type AsyncJobStatus200ReplyType = Static<typeof AsyncJobStatus200Reply>;
-
-export const AsyncJobStatus401Reply = Type.Object({
-  statusCode: Type.Literal(401),
-  error: Type.String(),
-  message: Type.String(),
-});
-
-export type AsyncJobStatus401ReplyType = Static<typeof AsyncJobStatus401Reply>;
-
-export const AsyncJobStatus403Reply = Type.Object({
-  statusCode: Type.Literal(403),
-  error: Type.String(),
-  message: Type.String(),
-});
-
-export type AsyncJobStatus403ReplyType = Static<typeof AsyncJobStatus403Reply>;
-
-export const AsyncJobStatus404Reply = Type.Object({
-  statusCode: Type.Literal(404),
-  message: Type.String(),
-  error: Type.String(),
-});
-
-export type AsyncJobStatus404ReplyType = Static<typeof AsyncJobStatus404Reply>;

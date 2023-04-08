@@ -67,33 +67,23 @@ test("POST '/visit' accepts valid request", async (t) => {
   t.deepEqual(response.json(), { status: "scheduled" });
 });
 
-test("POST '/visit' records video when possible", async (t) => {
+test("POST '/visit' records video", async (t) => {
   const { app, testAppURL } = t.context;
 
   const response = await app.inject({
     method: "POST",
     url: "/visit",
     payload: {
-      steps: [{ url: testAppURL }],
+      steps: [{ url: testAppURL, actions: ["page.waitForTimeout(1000)"] }],
       record: true,
     },
   });
 
-  // this test case is inherently flaky as sometimes video frames might be produced, even with simple visits,
-  // and sometimes not - this test checks that the video was produced - if it was possible, or that a correct error
-  // message was returned
-
   const body = response.json();
-  if (response.statusCode === 400) {
-    t.is(response.statusCode, 400);
-    t.is(body.error, "Bad Request");
-    t.is(body.message, "Page did not produce any video frames");
-  } else {
-    t.is(response.statusCode, 200);
-    t.assert(body.hasOwnProperty("result"));
-    t.assert(body.result.hasOwnProperty("video"));
-    t.is(base64regex.test(body.result.video), true);
-  }
+  t.is(response.statusCode, 200);
+  t.assert(body.hasOwnProperty("result"));
+  t.assert(body.result.hasOwnProperty("video"));
+  t.is(base64regex.test(body.result.video), true);
 });
 
 test("POST '/visit' creates pdf", async (t) => {

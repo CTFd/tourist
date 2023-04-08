@@ -7,7 +7,7 @@ import config from "../config";
 import { JobBrowser, JobCookieType, JobOptions, JobStepType } from "../schemas/api";
 import { PlaywrightRunner } from "../utils/runner";
 
-export declare type VisitJobData = {
+export type VisitJobData = {
   browser: JobBrowser;
   steps: JobStepType[];
   cookies: JobCookieType[];
@@ -15,8 +15,7 @@ export declare type VisitJobData = {
 };
 
 export const asyncVisitJob = async (job: Job<VisitJobData>) => {
-  const { data } = job;
-
+  const data = job.data;
   const runner = new PlaywrightRunner(data, config.DEBUG);
 
   try {
