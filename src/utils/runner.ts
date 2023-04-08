@@ -170,8 +170,14 @@ export class PlaywrightRunner {
           // auto-close new pages after they reach load state.
           // control over this can't be provided to the user because
           // READ_ALERTS option needs to overwrite any handlers for new pages.
-          await page.waitForLoadState();
-          await page.close();
+
+          try {
+            await page.waitForLoadState();
+            await page.close();
+          } catch (e: any) {
+            // the page can be already closed if the browser begins working on the next step
+            // catch the error and ignore this
+          }
         });
       }
 
