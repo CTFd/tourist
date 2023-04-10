@@ -38,7 +38,7 @@
     "jsonwebtoken": "^9.0.0",
     "lodash": "^4.17.21",
     "pino-pretty": "^9.1.1",
-    "playwright": "^1.31.1",
+    "playwright": "^1.32.2",
     "vm2": "^3.9.15"
   },
   "devDependencies": {
