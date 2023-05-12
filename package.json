@@ -16,8 +16,8 @@
     "start:test-app": "nodemon ./tests/utils/_server.ts",
     "format:code": "prettier '{src,tests}/**/*.ts' --write",
     "lint:code": "prettier --check '{src,tests}/**/*.ts'",
-    "format:md": "markdownlint --fix '**/*.md' --ignore node_modules --ignore tests --disable MD001",
-    "lint:md": "markdownlint '**/*.md' --ignore node_modules --ignore tests --disable MD001",
+    "format:md": "markdownlint --fix '**/*.md' --ignore node_modules --ignore tests --disable MD001 --disable MD013",
+    "lint:md": "markdownlint '**/*.md' --ignore node_modules --ignore tests --disable MD001 --disable MD013",
     "format": "yarn format:code && yarn format:md",
     "lint": "yarn lint:code && yarn lint:md",
     "test": "ava",
@@ -26,6 +26,7 @@
     "test:cov": "c8 ava --serial"
   },
   "dependencies": {
+    "@fastify/cors": "^8.2.1",
     "@fastify/swagger": "^8.3.1",
     "@fastify/swagger-ui": "^1.8.1",
     "@fastify/type-provider-typebox": "^3.1.0",
