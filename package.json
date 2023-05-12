@@ -1,6 +1,6 @@
 {
   "name": "tourist",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Tourist is an API for artificially visiting vulnerable web applications in CTF challenges",
   "main": "src/index.ts",
   "repository": "https://github.com/CTFd/tourist",
