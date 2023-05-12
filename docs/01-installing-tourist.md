@@ -78,18 +78,19 @@ like [pm2](https://pm2.keymetrics.io/) or with a systemd service.
 
 ### Configuration Reference
 
-| Option                | Default                 | Description                                                    |
-|-----------------------|-------------------------|----------------------------------------------------------------|
-| SECRET                | (dynamically generated) | Secret value for token authentication purposes.                |
-| NODE_ENV              | production              | Environment Tourist is running in.                             |
-| REDIS_URL             | redis://127.0.0.1:6379  | URL of the redis server.                                       |
-| CONCURRENCY           | (number of CPU threads) | Maximum number of jobs processed concurrently.                 |
-| HOST                  | 127.0.0.1               | Host address that Tourist will listen on.                      |
-| PORT                  | 3000                    | Port on the host address that tourist will listen on.          |
-| ENABLE_LEGACY_API     | false                   | Whether to enable legacy portion of the API (not recommended). |
-| ENABLE_AUTHENTICATION | true                    | Whether to enable authentication with tokens (recommended).    |
-| SENTRY_DSN            | undefined (disabled)    | <https://docs.sentry.io/product/sentry-basics/dsn-explainer/>    |
-| SENTRY_TRACES_SAMPLE  | 0.0                     | <https://develop.sentry.dev/sdk/performance/#tracessamplerate>   |
+| Option                | Default                 | Description                                                                       |
+|-----------------------|-------------------------|-----------------------------------------------------------------------------------|
+| SECRET                | (dynamically generated) | Secret value for token authentication purposes.                                   |
+| NODE_ENV              | production              | Environment Tourist is running in.                                                |
+| REDIS_URL             | redis://127.0.0.1:6379  | URL of the redis server.                                                          |
+| CONCURRENCY           | (number of CPU threads) | Maximum number of jobs processed concurrently.                                    |
+| HOST                  | 127.0.0.1               | Host address that Tourist will listen on.                                         |
+| PORT                  | 3000                    | Port on the host address that tourist will listen on.                             |
+| ENABLE_LEGACY_API     | false                   | Whether to enable legacy portion of the API (not recommended).                    |
+| ENABLE_AUTHENTICATION | true                    | Whether to enable authentication with tokens (recommended).                       |
+| ENABLE_CORS           | false                   | Whether to enable [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS)  |
+| SENTRY_DSN            | undefined (disabled)    | <https://docs.sentry.io/product/sentry-basics/dsn-explainer/>                     |
+| SENTRY_TRACES_SAMPLE  | 0.0                     | <https://develop.sentry.dev/sdk/performance/#tracessamplerate>                    |
 
 #### Note on concurrency
 

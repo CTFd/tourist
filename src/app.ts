@@ -5,6 +5,7 @@ import { TouristConfig } from "./config";
 import { createRouter } from "./router";
 import { getIssuerToken } from "./utils/auth";
 
+import { initCORS } from "./loaders/cors";
 import { initErrorHandler } from "./loaders/error-handling";
 import { initSwagger } from "./loaders/swagger";
 
@@ -15,6 +16,7 @@ export const createApp = async (
   const app: FastifyInstance = Fastify(options).withTypeProvider<TypeBoxTypeProvider>();
   app.decorate("config", config);
 
+  initCORS(app);
   initErrorHandler(app);
   initSwagger(app);
 
