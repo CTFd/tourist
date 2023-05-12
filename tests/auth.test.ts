@@ -170,6 +170,7 @@ test("POST '/api/v1/issue-token' rejects requests without authorization", async 
   const body = response.json();
   t.is(response.statusCode, 400);
   t.deepEqual(body, {
+    code: "FST_ERR_VALIDATION",
     statusCode: 400,
     error: "Bad Request",
     message: "headers must have required property 'authorization'",
