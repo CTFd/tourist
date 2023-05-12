@@ -184,6 +184,7 @@ test("POST '/api/v1/sync-job' does not accept cookies with url", async (t) => {
 
   t.is(response.statusCode, 400);
   t.deepEqual(response.json(), {
+    code: "FST_ERR_VALIDATION",
     statusCode: 400,
     error: "Bad Request",
     message: "body/cookies/0 must have required property 'domain'",
@@ -223,6 +224,7 @@ test("POST '/api/v1/sync-job' rejects cookies with invalid httpOnly property", a
 
   t.is(response.statusCode, 400);
   t.deepEqual(response.json(), {
+    code: "FST_ERR_VALIDATION",
     statusCode: 400,
     error: "Bad Request",
     message: "body/cookies/0/httpOnly must be boolean",
@@ -243,6 +245,7 @@ test("POST '/api/v1/sync-job' rejects cookies with invalid secure property", asy
 
   t.is(response.statusCode, 400);
   t.deepEqual(response.json(), {
+    code: "FST_ERR_VALIDATION",
     statusCode: 400,
     error: "Bad Request",
     message: "body/cookies/0/secure must be boolean",
