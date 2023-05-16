@@ -71,7 +71,7 @@ export const JobDispatchRequest = Type.Object(
 export type JobDispatchRequestType = Static<typeof JobDispatchRequest>;
 
 export const JobOperation400Reply = Type.Object({
-  code: Type.String(),
+  code: Type.Optional(Type.String()),
   statusCode: Type.Literal(400),
   error: Type.String(),
   message: Type.String(),
