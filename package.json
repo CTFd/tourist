@@ -32,7 +32,7 @@
     "@fastify/type-provider-typebox": "^3.1.0",
     "@sentry/integrations": "^7.46.0",
     "@sentry/node": "^7.51.0",
-    "@sinclair/typebox": "^0.25.24",
+    "@sinclair/typebox": "^0.28.13",
     "bull": "^4.10.2",
     "dotenv": "^16.0.3",
     "fastify": "^4.17.0",
