@@ -12,6 +12,13 @@ test("GET '/api/v1/healthcheck' returns OK", async (t) => {
     url: "/api/v1/healthcheck",
   });
 
-  t.is(response.statusCode, 200);
-  t.deepEqual(response.json(), { status: "OK" });
+  // expect healthcheck to fail with github action workflow
+  // as it won't be able to reach example.com
+  if (process.env.GH_ACTIONS === "true") {
+    t.is(response.statusCode, 500);
+    t.deepEqual(response.json(), { status: "FAILING" });
+  } else {
+    t.is(response.statusCode, 200);
+    t.deepEqual(response.json(), { status: "OK" });
+  }
 });
