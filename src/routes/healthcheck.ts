@@ -5,16 +5,54 @@ import {
   FastifyRequest,
 } from "fastify";
 
+import { syncVisitJob, VisitJobData } from "../jobs/api";
+import { JobBrowser, JobOptions } from "../schemas/api";
+
+import {
+  HealthcheckOKReply,
+  HealthcheckOKReplyType,
+  HealthcheckFailingReply,
+  HealthcheckFailingReplyType,
+} from "../schemas/healthcheck";
+
 export default (
   fastify: FastifyInstance,
   options: FastifyPluginOptions,
   done: (err?: Error | undefined) => void,
 ) => {
-  fastify.get("/healthcheck", { handler: handleHealthcheck });
+  fastify.get<{
+    Reply: HealthcheckOKReplyType | HealthcheckFailingReplyType;
+  }>("/healthcheck", {
+    schema: {
+      response: {
+        200: HealthcheckOKReply,
+        500: HealthcheckFailingReply,
+      },
+    },
+    handler: handleHealthcheck,
+  });
 
   done();
 };
 
-const handleHealthcheck = (request: FastifyRequest, reply: FastifyReply) => {
-  reply.send({ status: "OK" });
+const EXPECTED_SCREENSHOT_LENGTH = 39348;
+
+const handleHealthcheck = async (request: FastifyRequest, reply: FastifyReply) => {
+  const data: VisitJobData = {
+    browser: JobBrowser.CHROMIUM,
+    steps: [{ url: "https://example.com" }],
+    cookies: [],
+    options: [JobOptions.SCREENSHOT],
+  };
+
+  const { screenshot } = await syncVisitJob(data);
+  if (screenshot) {
+    if (
+      Math.floor(0.99 * EXPECTED_SCREENSHOT_LENGTH) < screenshot.length &&
+      Math.ceil(1.01 * EXPECTED_SCREENSHOT_LENGTH) > screenshot.length
+    )
+      return reply.send({ status: "OK" });
+  }
+
+  return reply.status(500).send({ status: "FAILING" });
 };
