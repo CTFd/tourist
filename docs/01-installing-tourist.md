@@ -101,6 +101,6 @@ available on your system, as each additional browser can consume somewhere aroun
 
 #### Note on body size
 
-The body size limit is set to 25MB by default. The value is increased because when rendering HTML page the images might
+The body size limit is set to 25MB by default. The value is increased because when rendering HTML pages the images might
 have to be inlined with base64 - and thus the documents end up being very large. If you are not using this feature, you
 can safely decrease this value. On the other hand, if your documents are still larger, you might want to increase this.
