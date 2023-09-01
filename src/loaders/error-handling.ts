@@ -24,7 +24,7 @@ export const initErrorHandler = (app: FastifyInstance) => {
         Sentry.captureException(error);
       }
 
-      return reply.code(500).send(new Error("Internal Server Error"));
+      return reply.code(500).send({ status: "error", error: "Internal Server Error" });
     },
   );
 };

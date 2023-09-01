@@ -6,7 +6,7 @@ import config from "../src/config";
 import { createApp } from "../src/app";
 import { AsyncVisitQueue } from "../src/queue";
 import { getIssuerToken } from "../src/utils/auth";
-import { JobOptions } from "../src/schemas/api";
+import { JobOptions } from "../src/schemas/jobs";
 
 // @ts-ignore: tests directory is not under rootDir, because we're using ts-node for testing
 import { startTestApp } from "./utils/_app";
@@ -373,4 +373,62 @@ test("GET '/api/v1/job-status' validates authorization", async (t) => {
     error: "Forbidden",
     message: "Provided token does not allow retrieving data for this job",
   });
+});
+
+test("POST '/api/v1/render' validates authorization", async (t) => {
+  const { app } = t.context;
+
+  // token not present
+  const response_1 = await app.inject({
+    method: "POST",
+    url: "/api/v1/render",
+    payload: {
+      html: "<html><body><h1>Hello World</h1></body></html>",
+    },
+  });
+
+  t.is(response_1.statusCode, 401);
+  const data_1 = response_1.json();
+  t.deepEqual(data_1, {
+    statusCode: 401,
+    error: "Unauthenticated",
+    message: "Authorization has not been provided",
+  });
+
+  // token invalid
+  const response_2 = await app.inject({
+    method: "POST",
+    url: "/api/v1/render",
+    payload: {
+      html: "<html><body><h1>Hello World</h1></body></html>",
+    },
+    headers: {
+      Authorization: "Bearer eyfdsfdsfsd.invalid-token.dsadasd",
+    },
+  });
+
+  t.is(response_2.statusCode, 403);
+  const data_2 = response_2.json();
+  t.deepEqual(data_2, {
+    statusCode: 403,
+    error: "Forbidden",
+    message: "Provided token does not allow rendering PDFs",
+  });
+
+  // correct token
+  const response_3 = await app.inject({
+    method: "POST",
+    url: "/api/v1/render",
+    payload: {
+      html: "<html><body><h1>Hello World</h1></body></html>",
+    },
+    headers: {
+      Authorization: `Bearer ${TEST_TOKEN}`,
+    },
+  });
+
+  t.is(response_3.statusCode, 200);
+  const data_3 = response_3.json();
+  t.assert(data_3.hasOwnProperty("pdf"));
+  t.is(base64regex.test(data_3.pdf), true);
 });
