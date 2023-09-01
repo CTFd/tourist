@@ -86,7 +86,7 @@ like [pm2](https://pm2.keymetrics.io/) or with a systemd service.
 | CONCURRENCY           | (number of CPU threads) | Maximum number of jobs processed concurrently.                                   |
 | HOST                  | 127.0.0.1               | Host address that Tourist will listen on.                                        |
 | PORT                  | 3000                    | Port on the host address that tourist will listen on.                            |
-| BODY_SIZE_LIMIT       | 26214400 (25MB)         | Maximum allowed body size                                                        |
+| BODY_SIZE_LIMIT       | 26214400 (25MB)         | Maximum allowed body size.                                                       |
 | ENABLE_LEGACY_API     | false                   | Whether to enable legacy portion of the API (not recommended).                   |
 | ENABLE_AUTHENTICATION | true                    | Whether to enable authentication with tokens (recommended).                      |
 | ENABLE_CORS           | false                   | Whether to enable [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS) |
@@ -99,9 +99,8 @@ Concurrency value defaults to the number of threads present on the system. It is
 as a headless browser can consume a full thread even for simple operations. You should also account for the RAM
 available on your system, as each additional browser can consume somewhere around 100/200MB of RAM.
 
-
 #### Note on body size
 
-The body size limit is set to 25MB by default. The value is increased because when rendering HTML page the images might 
-have to be inlined with base64 - and thus the documents end up being very large. If you are not using this feature, you 
+The body size limit is set to 25MB by default. The value is increased because when rendering HTML page the images might
+have to be inlined with base64 - and thus the documents end up being very large. If you are not using this feature, you
 can safely decrease this value. On the other hand, if your documents are still larger, you might want to increase this.
