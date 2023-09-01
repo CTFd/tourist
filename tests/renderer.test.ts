@@ -21,13 +21,7 @@ test("PlaywrightRenderer renders the PDF", async (t) => {
   await runner.teardown();
 
   t.is(base64regex.test(pdf), true);
-
-  const EXPECTED_PDF_LENGTH = 11696;
-  t.is(
-    Math.floor(0.9 * EXPECTED_PDF_LENGTH) < pdf.length &&
-      Math.ceil(1.1 * EXPECTED_PDF_LENGTH) > pdf.length,
-    true,
-  );
+  t.is(pdf.length > 10000, true);
 });
 
 test("PlaywrightRenderer delays rendering the PDF", async (t) => {

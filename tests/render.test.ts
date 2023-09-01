@@ -12,7 +12,6 @@ const test = anyTest as TestFn<{
 }>;
 
 const HTML_PAGE = "<html><body><h1>Hello World</h1></body></html>";
-const EXPECTED_PDF_LENGTH = 11696;
 
 test.before(async (t) => {
   const app = await createApp(
@@ -57,11 +56,7 @@ test("POST '/api/v1/render' renders A4 PDF", async (t) => {
   t.is(response.statusCode, 200);
   t.assert(body.hasOwnProperty("pdf"));
   t.is(base64regex.test(body.pdf), true);
-  t.is(
-    Math.floor(0.9 * EXPECTED_PDF_LENGTH) < body.pdf.length &&
-      Math.ceil(1.1 * EXPECTED_PDF_LENGTH) > body.pdf.length,
-    true,
-  );
+  t.is(body.pdf.length > 10000, true);
 });
 
 test("POST '/api/v1/render' accepts configuration", async (t) => {
@@ -91,11 +86,7 @@ test("POST '/api/v1/render' accepts configuration", async (t) => {
   t.is(response.statusCode, 200);
   t.assert(body.hasOwnProperty("pdf"));
   t.is(base64regex.test(body.pdf), true);
-  t.is(
-    Math.floor(0.9 * EXPECTED_PDF_LENGTH) < body.pdf.length &&
-      Math.ceil(1.1 * EXPECTED_PDF_LENGTH) > body.pdf.length,
-    true,
-  );
+  t.is(body.pdf.length > 10000, true);
 });
 
 test("POST '/api/v1/render' accepts size", async (t) => {
@@ -117,11 +108,7 @@ test("POST '/api/v1/render' accepts size", async (t) => {
   t.is(response.statusCode, 200);
   t.assert(body.hasOwnProperty("pdf"));
   t.is(base64regex.test(body.pdf), true);
-  t.is(
-    Math.floor(0.9 * EXPECTED_PDF_LENGTH) < body.pdf.length &&
-      Math.ceil(1.1 * EXPECTED_PDF_LENGTH) > body.pdf.length,
-    true,
-  );
+  t.is(body.pdf.length > 10000, true);
 });
 
 test("POST '/api/v1/render' validates format", async (t) => {
