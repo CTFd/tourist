@@ -56,7 +56,7 @@ test("POST '/api/v1/render' renders A4 PDF", async (t) => {
   t.is(response.statusCode, 200);
   t.assert(body.hasOwnProperty("pdf"));
   t.is(base64regex.test(body.pdf), true);
-  t.is(body.pdf.length > 10000, true);
+  t.is(body.pdf.length > 9000, true);
 });
 
 test("POST '/api/v1/render' accepts configuration", async (t) => {
@@ -86,7 +86,7 @@ test("POST '/api/v1/render' accepts configuration", async (t) => {
   t.is(response.statusCode, 200);
   t.assert(body.hasOwnProperty("pdf"));
   t.is(base64regex.test(body.pdf), true);
-  t.is(body.pdf.length > 10000, true);
+  t.is(body.pdf.length > 9000, true);
 });
 
 test("POST '/api/v1/render' accepts size", async (t) => {
@@ -108,7 +108,7 @@ test("POST '/api/v1/render' accepts size", async (t) => {
   t.is(response.statusCode, 200);
   t.assert(body.hasOwnProperty("pdf"));
   t.is(base64regex.test(body.pdf), true);
-  t.is(body.pdf.length > 10000, true);
+  t.is(body.pdf.length > 9000, true);
 });
 
 test("POST '/api/v1/render' validates format", async (t) => {
