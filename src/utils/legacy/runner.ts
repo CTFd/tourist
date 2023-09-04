@@ -1,6 +1,6 @@
 import { PlaywrightRunner, PlaywrightRunnerData } from "../runner";
 import { LegacyCookieType, LegacyStepType } from "../../schemas/legacy";
-import { JobBrowser, JobOptions } from "../../schemas/api";
+import { JobBrowser, JobOptions } from "../../schemas/jobs";
 
 export type LegacyPlaywrightRunnerData = {
   steps: LegacyStepType[];

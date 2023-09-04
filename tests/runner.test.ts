@@ -3,7 +3,7 @@ import anyTest, { TestFn } from "ava";
 import { v4 as uuid4 } from "uuid";
 
 import { PlaywrightRunner } from "../src/utils/runner";
-import { CookieSameSite, JobBrowser } from "../src/schemas/api";
+import { CookieSameSite, JobBrowser } from "../src/schemas/jobs";
 
 // @ts-ignore: tests directory is not under rootDir, because we're using ts-node for testing
 import { startTestApp } from "./utils/_app";

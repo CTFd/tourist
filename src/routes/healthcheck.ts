@@ -6,7 +6,7 @@ import {
 } from "fastify";
 
 import { syncVisitJob, VisitJobData } from "../jobs/api";
-import { JobBrowser, JobOptions } from "../schemas/api";
+import { JobBrowser, JobOptions } from "../schemas/jobs";
 
 import {
   HealthcheckOKReply,

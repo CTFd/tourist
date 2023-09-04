@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { JobStepType } from "../../schemas/api";
+import { JobStepType } from "../../schemas/jobs";
 
 // perform basic preliminary validation of the payload to maximize the chances of it running
 // it is not a security mechanism, security is handled by the context isolation
