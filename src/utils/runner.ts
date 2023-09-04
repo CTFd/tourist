@@ -110,7 +110,8 @@ export class PlaywrightRunner {
             action.startsWith("page.setExtraHTTPHeaders") ||
             action.startsWith("context.on") ||
             action.startsWith("context.setDefaultTimeout") ||
-            action.startsWith("context.setDefaultNavigationTimeout"),
+            action.startsWith("context.setDefaultNavigationTimeout") ||
+            action.startsWith("context.setExtraHTTPHeaders"),
         );
       }
 

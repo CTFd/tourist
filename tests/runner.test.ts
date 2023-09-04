@@ -136,6 +136,70 @@ test("PlaywrightRunner attaches cookies with SameSite attribute", async (t) => {
   t.is(headers.cookie, "test=test; test2=test2");
 });
 
+test("PlaywrightRunner attaches Extra HTTP Headers using preOpen page.setExtraHTTPHeaders action", async (t) => {
+  const { testApp, testAppURL } = t.context;
+  const testID = uuid4();
+
+  const runner = new PlaywrightRunner({
+    browser: JobBrowser.CHROMIUM,
+    steps: [{ 
+      url: `${testAppURL}/record-req?id=${testID}`,
+      actions: ['page.setExtraHTTPHeaders({"My-Custom-Header": "S0m3-cu570m-v4lu3"})'],
+    }],
+    cookies: [],
+    options: [],
+  });
+
+  await runner.init();
+  await runner.exec();
+  await runner.finish();
+
+  const inspection = await testApp.inject({
+    method: "GET",
+    url: "/inspect-req",
+    query: {
+      id: testID,
+    },
+  });
+
+  const { headers } = inspection.json();
+  const customHeaderName = "My-Custom-Header".toLowerCase();
+  t.assert(headers.hasOwnProperty(customHeaderName));
+  t.is(headers[customHeaderName], "S0m3-cu570m-v4lu3");
+});
+
+test("PlaywrightRunner attaches Extra HTTP Headers using preOpen context.setExtraHTTPHeaders action", async (t) => {
+  const { testApp, testAppURL } = t.context;
+  const testID = uuid4();
+
+  const runner = new PlaywrightRunner({
+    browser: JobBrowser.CHROMIUM,
+    steps: [{ 
+      url: `${testAppURL}/record-req?id=${testID}`,
+      actions: ['context.setExtraHTTPHeaders({"My-Custom-Header": "S0m3-cu570m-v4lu3"})'],
+    }],
+    cookies: [],
+    options: [],
+  });
+
+  await runner.init();
+  await runner.exec();
+  await runner.finish();
+
+  const inspection = await testApp.inject({
+    method: "GET",
+    url: "/inspect-req",
+    query: {
+      id: testID,
+    },
+  });
+
+  const { headers } = inspection.json();
+  const customHeaderName = "My-Custom-Header".toLowerCase();
+  t.assert(headers.hasOwnProperty(customHeaderName));
+  t.is(headers[customHeaderName], "S0m3-cu570m-v4lu3");
+});
+
 test("PlaywrightRunner can use multiple steps", async (t) => {
   const { testApp, testAppURL } = t.context;
   const testID_1 = uuid4();
