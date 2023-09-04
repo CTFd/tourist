@@ -142,10 +142,14 @@ test("PlaywrightRunner attaches Extra HTTP Headers using preOpen page.setExtraHT
 
   const runner = new PlaywrightRunner({
     browser: JobBrowser.CHROMIUM,
-    steps: [{ 
-      url: `${testAppURL}/record-req?id=${testID}`,
-      actions: ['page.setExtraHTTPHeaders({"My-Custom-Header": "S0m3-cu570m-v4lu3"})'],
-    }],
+    steps: [
+      {
+        url: `${testAppURL}/record-req?id=${testID}`,
+        actions: [
+          'page.setExtraHTTPHeaders({"My-Custom-Header": "S0m3-cu570m-v4lu3"})',
+        ],
+      },
+    ],
     cookies: [],
     options: [],
   });
@@ -174,10 +178,14 @@ test("PlaywrightRunner attaches Extra HTTP Headers using preOpen context.setExtr
 
   const runner = new PlaywrightRunner({
     browser: JobBrowser.CHROMIUM,
-    steps: [{ 
-      url: `${testAppURL}/record-req?id=${testID}`,
-      actions: ['context.setExtraHTTPHeaders({"My-Custom-Header": "S0m3-cu570m-v4lu3"})'],
-    }],
+    steps: [
+      {
+        url: `${testAppURL}/record-req?id=${testID}`,
+        actions: [
+          'context.setExtraHTTPHeaders({"My-Custom-Header": "S0m3-cu570m-v4lu3"})',
+        ],
+      },
+    ],
     cookies: [],
     options: [],
   });
