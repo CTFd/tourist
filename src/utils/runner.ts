@@ -107,6 +107,7 @@ export class PlaywrightRunner {
             action.startsWith("page.on") ||
             action.startsWith("page.setDefaultTimeout") ||
             action.startsWith("page.setDefaultNavigationTimeout") ||
+            action.startsWith("page.setExtraHTTPHeaders") ||
             action.startsWith("context.on") ||
             action.startsWith("context.setDefaultTimeout") ||
             action.startsWith("context.setDefaultNavigationTimeout"),
