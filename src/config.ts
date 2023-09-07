@@ -14,7 +14,6 @@ export type TouristConfig = {
   REDIS_URL: string;
   HOST: string;
   PORT: number;
-  BODY_SIZE_LIMIT: number;
   ENABLE_LEGACY_API: boolean;
   ENABLE_AUTHENTICATION: boolean;
   ENABLE_CORS: boolean;
@@ -40,9 +39,6 @@ const getConfig = () =>
         : os.cpus().length,
     HOST: process.env.HOST || "127.0.0.1",
     PORT: parseInt(process.env.PORT ? process.env.PORT : "3000"),
-    BODY_SIZE_LIMIT: parseInt(
-      process.env.BODY_SIZE_LIMIT ? process.env.BODY_SIZE_LIMIT : "26214400",
-    ), // 25MB
     ENABLE_LEGACY_API: parseBool(process.env.ENABLE_LEGACY_API, false),
     ENABLE_AUTHENTICATION: parseBool(process.env.ENABLE_AUTHENTICATION, true),
     ENABLE_CORS: parseBool(process.env.ENABLE_CORS, false),

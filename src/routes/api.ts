@@ -31,7 +31,7 @@ import {
   JobOperation403ReplyType,
   JobOperation404Reply,
   JobOperation404ReplyType,
-} from "../schemas/jobs";
+} from "../schemas/api";
 import { AsyncVisitQueue } from "../queue";
 import { syncVisitJob, VisitJobData } from "../jobs/api";
 import { authenticateVisitToken } from "../utils/auth";

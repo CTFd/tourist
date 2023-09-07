@@ -2,7 +2,7 @@ import anyTest, { TestFn } from "ava";
 import { FastifyInstance } from "fastify";
 
 import { createApp } from "../src/app";
-import { JobBrowser, JobOptions } from "../src/schemas/jobs";
+import { JobBrowser, JobOptions } from "../src/schemas/api";
 import { AsyncVisitQueue } from "../src/queue";
 
 // @ts-ignore: tests directory is not under rootDir, because we're using ts-node for testing
