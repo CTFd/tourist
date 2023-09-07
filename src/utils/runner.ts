@@ -10,7 +10,7 @@ import {
   JobCookieType,
   JobOptions,
   JobResultType,
-  JobStepType,
+  JobStepType, PDFOptionsType,
 } from "../schemas/api";
 
 export type PlaywrightRunnerData = {
@@ -18,6 +18,7 @@ export type PlaywrightRunnerData = {
   steps: JobStepType[];
   cookies: JobCookieType[];
   options: JobOptions[];
+  pdf?: PDFOptionsType;
 };
 
 // PlaywrightRunner executes steps and actions in an isolated context
@@ -30,6 +31,7 @@ export class PlaywrightRunner {
   public readonly browserKind: JobBrowser;
   public readonly steps: JobStepType[];
   public readonly cookies: JobCookieType[];
+  public readonly pdf?: PDFOptionsType;
 
   private _dialogMessages: string[] = [];
   private readonly _debug: boolean;
@@ -39,6 +41,11 @@ export class PlaywrightRunner {
     this.steps = data.steps;
     this.cookies = data.cookies;
     this.options = data.options;
+
+    if (data.pdf) {
+      this.pdf = data.pdf;
+    }
+
     this._debug = debug;
   }
 
@@ -227,7 +234,28 @@ export class PlaywrightRunner {
     }
 
     if (this.options.includes(JobOptions.PDF)) {
-      const pdfBuffer = await this.page!.pdf();
+      let pdfBuffer;
+
+      if (this.pdf) {
+        await this.page.emulateMedia({ media: this.pdf.media });
+
+        if (this.pdf.js && this.pdf.delay > 0) {
+          await this.page.waitForTimeout(this.pdf.delay);
+        }
+
+        pdfBuffer = await this.page.pdf({
+          format: this.pdf.format,
+          landscape: this.pdf.landscape,
+          margin: this.pdf.margin,
+          scale: this.pdf.scale,
+          width: this.pdf.size?.width,
+          height: this.pdf.size?.height,
+          printBackground: this.pdf.background,
+        });
+      } else {
+        pdfBuffer = await this.page.pdf();
+      }
+
       result.pdf = pdfBuffer.toString("base64");
     }
 

@@ -70,7 +70,27 @@ The payload for both types of jobs is exactly the same:
     "SCREENSHOT",
     // render a pdf after the actions are finished
     "PDF"
-  ]
+  ],
+  // additional PDF generation options - will be ignored if PDF option is not selected
+  "pdf": {
+    "media": "screen", // media emulation - optional, defaults to screen
+    "format": "A4", // page format - optional, defaults to A4 (for a full list of supported formats, see the playwright docs on PDF rendering)
+    "landscape": false, // whether the page should be rendered in landscape mode (horizontal) - optional, defaults to false (portrait / vertical)
+    "background": true, // whether the page should be rendered with background color / images for elements - optional, defaults to true
+    "margin": { // page margins - optional, default to 0
+      "top": "10px", // values can be as supported by CSS, either numbers or strings with units
+      "right": "10px",
+      "bottom": "10px",
+      "left": "10px"
+    },
+    "size": { // page size - optional, defaults to an empty object. Format will take precedence over size.
+      "width": "10px",
+      "height": "10px"
+    },
+    "js": true, // whether to allow JS execution on the page - optional, defaults to true
+    "delay": 1000, // delay in ms before rendering the page (to allow js execution) - optional, defaults to 0 - will be ignored if js is false, max 30 seconds
+    "scale": 1.0, // page scale - optional, defaults to 1.0, max 2.0
+  }
 }
 ```
 
