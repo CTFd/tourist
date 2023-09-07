@@ -11,7 +11,7 @@ switch (cmd) {
     console.log(getIssuerToken(config.SECRET));
     break;
 
-    case "get-visit-token":
+  case "get-visit-token":
     const scope = args[1];
     const validity = parseInt(args[2]) || 3600;
     const strict = parseBool(args[3]);
@@ -23,7 +23,6 @@ switch (cmd) {
 
     console.log(jwt.sign(payload, config.SECRET, { expiresIn: validity }));
     break;
-
 
   default:
     console.log(`Invalid command '${cmd}'`);

@@ -128,8 +128,9 @@ test("POST '/api/v1/sync-job' creates pdf with settings", async (t) => {
         js: true,
         delay: 0,
         scale: 1.0,
+      },
     },
-  }});
+  });
 
   t.is(response.statusCode, 200);
 
@@ -155,7 +156,8 @@ test("POST '/api/v1/sync-job' accepts pdf render size", async (t) => {
           height: "10cm",
         },
       },
-    }});
+    },
+  });
 
   t.is(response.statusCode, 200);
 
@@ -176,9 +178,10 @@ test("POST '/api/v1/sync-job' validates pdf render format", async (t) => {
       steps: [{ url: testAppURL }],
       options: [JobOptions.PDF],
       pdf: {
-        format: "B5"
+        format: "B5",
       },
-    }});
+    },
+  });
 
   t.is(response.statusCode, 400);
   t.deepEqual(response.json(), {
@@ -203,7 +206,8 @@ test("POST '/api/v1/sync-job' validates pdf render delay", async (t) => {
         js: true,
         delay: 20000,
       },
-    }});
+    },
+  });
 
   t.is(response.statusCode, 400);
   t.deepEqual(response.json(), {
@@ -225,7 +229,7 @@ test("POST '/api/v1/sync-job' validates pdf render scale", async (t) => {
       options: [JobOptions.PDF],
       pdf: {
         scale: 5.0,
-      }
+      },
     },
   });
 

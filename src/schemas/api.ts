@@ -135,7 +135,7 @@ export const JobDispatchRequest = Type.Object(
     steps: Type.Array(JobStep),
     cookies: Type.Array(JobCookie, { default: [] }),
     options: Type.Array(Type.Enum(JobOptions), { default: [] }),
-    pdf: Type.Optional(PDFOptions)
+    pdf: Type.Optional(PDFOptions),
   },
   { additionalProperties: false },
 );

@@ -10,7 +10,8 @@ import {
   JobCookieType,
   JobOptions,
   JobResultType,
-  JobStepType, PDFOptionsType,
+  JobStepType,
+  PDFOptionsType,
 } from "../schemas/api";
 
 export type PlaywrightRunnerData = {
