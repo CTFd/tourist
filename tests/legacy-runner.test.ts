@@ -3,7 +3,7 @@ import {
   LegacyPlaywrightRunner,
   LegacyPlaywrightRunnerData,
 } from "../src/utils/legacy/runner";
-import { JobOptions } from "../src/schemas/jobs";
+import { JobOptions } from "../src/schemas/api";
 
 test("LegacyPlaywrightRunner converts LegacyPlaywrightRunnerData to new format", async (t) => {
   const legacyData: LegacyPlaywrightRunnerData = {

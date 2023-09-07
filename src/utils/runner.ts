@@ -11,7 +11,7 @@ import {
   JobOptions,
   JobResultType,
   JobStepType,
-} from "../schemas/jobs";
+} from "../schemas/api";
 
 export type PlaywrightRunnerData = {
   browser: JobBrowser;

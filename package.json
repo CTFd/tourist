@@ -8,7 +8,6 @@
   "license": "Apache-2.0",
   "scripts": {
     "cmd:get-issuer-token": "ts-node ./src/cli.ts get-issuer-token",
-    "cmd:get-visit-token": "ts-node ./src/cli.ts get-visit-token",
     "build": "rm -rf ./out && tsc -p tsconfig.production.json",
     "start:docker": "node ./src/index.js | pino-pretty",
     "start:serve": "node ./out/index.js | pino-pretty",

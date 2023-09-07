@@ -1,6 +1,6 @@
 import { Static, Type } from "@sinclair/typebox";
 
-import { CookieSameSite } from "./jobs";
+import { CookieSameSite } from "./api";
 
 export const LegacyStep = Type.Object({
   url: Type.String(),

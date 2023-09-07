@@ -1,9 +1,8 @@
 import { FastifyInstance, FastifyPluginOptions } from "fastify";
 import legacy from "./routes/legacy";
 import healthcheck from "./routes/healthcheck";
-import jobs from "./routes/jobs";
+import api from "./routes/api";
 import auth from "./routes/auth";
-import render from "./routes/render";
 
 export const createRouter =
   () =>
@@ -25,8 +24,7 @@ export const createRouter =
     }
 
     fastify.register(healthcheck, { prefix: "/api/v1" });
-    fastify.register(jobs, { prefix: "/api/v1" });
-    fastify.register(render, { prefix: "/api/v1" });
+    fastify.register(api, { prefix: "/api/v1" });
 
     done();
   };

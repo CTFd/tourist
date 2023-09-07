@@ -69,24 +69,6 @@ export const getBaseHost = (u: string): string | null => {
   return hostname;
 };
 
-export const authenticateToken = (header: string): boolean => {
-  if (config.SECRET.trim() === "") {
-    return false;
-  }
-
-  const token = extractToken(header);
-  if (token === false) {
-    return false;
-  }
-
-  try {
-    jwt.verify(token, config.SECRET);
-    return true;
-  } catch (e) {
-    return false;
-  }
-};
-
 export const authenticateVisitToken = (
   header: string,
   visitURLs: string[],

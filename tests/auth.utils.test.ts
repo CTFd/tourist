@@ -5,7 +5,6 @@ import config from "../src/config";
 
 import {
   authenticateIssuerToken,
-  authenticateToken,
   authenticateVisitToken,
   extractToken,
   getBaseHost,
@@ -347,20 +346,4 @@ test("getIssuerToken returns a correct issuer token", async (t) => {
 
   // @ts-ignore: test won't reach this if jwt.verify fails to get token
   t.is(token.master, true);
-});
-
-test("authenticateToken returns true if token is a valid token", async (t) => {
-  t.is(authenticateToken(`Bearer ${TEST_TOKEN}`), true);
-});
-
-test("authenticateToken returns false if token could not be extracted", async (t) => {
-  t.is(authenticateToken(`Bearer`), false);
-});
-
-test("authenticateToken returns false if token is expired", async (t) => {
-  t.is(authenticateToken(`Bearer ${TEST_EXPIRED_TOKEN}`), false);
-});
-
-test("authenticateToken returns false if token is invalid", async (t) => {
-  t.is(authenticateToken(`Bearer eyfpdskfds.invalid-token.sadoiadhasio`), false);
 });

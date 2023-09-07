@@ -4,7 +4,7 @@ import { Job } from "bull";
 import * as Sentry from "@sentry/node";
 
 import config from "../config";
-import { JobBrowser, JobCookieType, JobOptions, JobStepType } from "../schemas/jobs";
+import { JobBrowser, JobCookieType, JobOptions, JobStepType } from "../schemas/api";
 import { PlaywrightRunner } from "../utils/runner";
 
 export type VisitJobData = {

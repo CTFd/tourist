@@ -2,7 +2,7 @@ import { Job } from "bull";
 
 import { LegacyCookieType, LegacyStepType } from "../schemas/legacy";
 import { LegacyPlaywrightRunner } from "../utils/legacy/runner";
-import { JobResultType } from "../schemas/jobs";
+import { JobResultType } from "../schemas/api";
 
 export type LegacySimpleVisitJobData = {
   steps: LegacyStepType[];
