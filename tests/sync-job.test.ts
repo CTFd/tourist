@@ -2,7 +2,7 @@ import anyTest, { TestFn } from "ava";
 import { FastifyInstance } from "fastify";
 
 import { createApp } from "../src/app";
-import { JobBrowser, JobOptions } from "../src/schemas/api";
+import { JobBrowser, JobOptions, MediaOptions, PageFormats } from "../src/schemas/api";
 
 // @ts-ignore: tests directory is not under rootDir, because we're using ts-node for testing
 import { startTestApp } from "./utils/_app";
@@ -103,6 +103,143 @@ test("POST '/api/v1/sync-job' creates pdf", async (t) => {
   t.assert(body.hasOwnProperty("result"));
   t.assert(body.result.hasOwnProperty("pdf"));
   t.is(base64regex.test(body.result.pdf), true);
+});
+
+test("POST '/api/v1/sync-job' creates pdf with settings", async (t) => {
+  const { app, testAppURL } = t.context;
+
+  const response = await app.inject({
+    method: "POST",
+    url: "/api/v1/sync-job",
+    payload: {
+      steps: [{ url: testAppURL }],
+      options: [JobOptions.PDF],
+      pdf: {
+        media: MediaOptions.SCREEN,
+        format: PageFormats.A5,
+        landscape: true,
+        background: true,
+        margin: {
+          top: "1cm",
+          right: "1cm",
+          bottom: "1cm",
+          left: "1cm",
+        },
+        js: true,
+        delay: 0,
+        scale: 1.0,
+      },
+    },
+  });
+
+  t.is(response.statusCode, 200);
+
+  const body = response.json();
+  t.is(body.status, "success");
+  t.assert(body.hasOwnProperty("result"));
+  t.assert(body.result.hasOwnProperty("pdf"));
+  t.is(base64regex.test(body.result.pdf), true);
+});
+
+test("POST '/api/v1/sync-job' accepts pdf render size", async (t) => {
+  const { app, testAppURL } = t.context;
+
+  const response = await app.inject({
+    method: "POST",
+    url: "/api/v1/sync-job",
+    payload: {
+      steps: [{ url: testAppURL }],
+      options: [JobOptions.PDF],
+      pdf: {
+        size: {
+          width: "10cm",
+          height: "10cm",
+        },
+      },
+    },
+  });
+
+  t.is(response.statusCode, 200);
+
+  const body = response.json();
+  t.is(body.status, "success");
+  t.assert(body.hasOwnProperty("result"));
+  t.assert(body.result.hasOwnProperty("pdf"));
+  t.is(base64regex.test(body.result.pdf), true);
+});
+
+test("POST '/api/v1/sync-job' validates pdf render format", async (t) => {
+  const { app, testAppURL } = t.context;
+
+  const response = await app.inject({
+    method: "POST",
+    url: "/api/v1/sync-job",
+    payload: {
+      steps: [{ url: testAppURL }],
+      options: [JobOptions.PDF],
+      pdf: {
+        format: "B5",
+      },
+    },
+  });
+
+  t.is(response.statusCode, 400);
+  t.deepEqual(response.json(), {
+    code: "FST_ERR_VALIDATION",
+    statusCode: 400,
+    error: "Bad Request",
+    message:
+      "body/pdf/format must be equal to constant, body/pdf/format must be equal to constant, body/pdf/format must be equal to constant, body/pdf/format must be equal to constant, body/pdf/format must be equal to constant, body/pdf/format must be equal to constant, body/pdf/format must be equal to constant, body/pdf/format must be equal to constant, body/pdf/format must be equal to constant, body/pdf/format must be equal to constant, body/pdf/format must be equal to constant, body/pdf/format must match a schema in anyOf",
+  });
+});
+
+test("POST '/api/v1/sync-job' validates pdf render delay", async (t) => {
+  const { app, testAppURL } = t.context;
+
+  const response = await app.inject({
+    method: "POST",
+    url: "/api/v1/sync-job",
+    payload: {
+      steps: [{ url: testAppURL }],
+      options: [JobOptions.PDF],
+      pdf: {
+        js: true,
+        delay: 20000,
+      },
+    },
+  });
+
+  t.is(response.statusCode, 400);
+  t.deepEqual(response.json(), {
+    code: "FST_ERR_VALIDATION",
+    statusCode: 400,
+    error: "Bad Request",
+    message: "body/pdf/delay must be <= 10000",
+  });
+});
+
+test("POST '/api/v1/sync-job' validates pdf render scale", async (t) => {
+  const { app, testAppURL } = t.context;
+
+  const response = await app.inject({
+    method: "POST",
+    url: "/api/v1/sync-job",
+    payload: {
+      steps: [{ url: testAppURL }],
+      options: [JobOptions.PDF],
+      pdf: {
+        scale: 5.0,
+      },
+    },
+  });
+
+  t.is(response.statusCode, 400);
+  t.deepEqual(response.json(), {
+    code: "FST_ERR_VALIDATION",
+    statusCode: 400,
+    error: "Bad Request",
+    message: "body/pdf/scale must be <= 2",
+  });
 });
 
 test("POST '/api/v1/sync-job' creates screenshot", async (t) => {
