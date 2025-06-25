@@ -22,9 +22,9 @@ export type VisitJobData = {
 };
 
 export const asyncVisitJob = async (job: Job<VisitJobData>) => {
-  console.log(`job ${job.id} starting`)
+  console.log(`job ${job.id} starting`);
   const data = job.data;
-  console.log(job.data)
+  console.log(job.data);
   const runner = new PlaywrightRunner(data, config.DEBUG);
 
   try {
@@ -39,15 +39,15 @@ export const asyncVisitJob = async (job: Job<VisitJobData>) => {
 
     // change the job status to failed with the error message
     await job.moveToFailed({ message: e.message });
-    console.log(`job ${job.id} failed`)
+    console.log(`job ${job.id} failed`);
   }
-  console.log(`job ${job.id} succeeded`)
+  console.log(`job ${job.id} succeeded`);
   return await runner.finish();
 };
 
 export const syncVisitJob = async (data: VisitJobData) => {
   const runner = new PlaywrightRunner(data, config.DEBUG);
-  console.log(data)
+  console.log(data);
 
   try {
     await runner.init();
