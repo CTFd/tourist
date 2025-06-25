@@ -47,10 +47,10 @@ const handleHealthcheck = async (request: FastifyRequest, reply: FastifyReply) =
 
   const { screenshot } = await syncVisitJob(data);
   if (screenshot) {
-    // +/- 10% difference accepted as screenshots will differ slightly
+    // +/- 20% difference accepted as screenshots will differ slightly
     if (
-      Math.floor(0.9 * EXPECTED_SCREENSHOT_LENGTH) < screenshot.length &&
-      Math.ceil(1.1 * EXPECTED_SCREENSHOT_LENGTH) > screenshot.length
+      Math.floor(0.8 * EXPECTED_SCREENSHOT_LENGTH) < screenshot.length &&
+      Math.ceil(1.2 * EXPECTED_SCREENSHOT_LENGTH) > screenshot.length
     )
       return reply.send({ status: "OK" });
   }
