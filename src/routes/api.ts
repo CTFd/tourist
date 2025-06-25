@@ -168,6 +168,7 @@ const getAsyncJobHandler = (fastify: FastifyInstance) => {
     }
 
     const job = await AsyncVisitQueue.add(data);
+    console.log(`job ${job.id} scheduled`);
     return reply.send({ status: "scheduled", id: job.id });
   };
 };
