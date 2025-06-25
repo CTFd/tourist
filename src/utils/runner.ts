@@ -89,6 +89,7 @@ export class PlaywrightRunner {
     }
 
     this.page = await this.context.newPage();
+    this.page.setDefaultTimeout(2000);
   }
 
   // exec() iterates over steps, splits actions into pre- and post-open and executes
